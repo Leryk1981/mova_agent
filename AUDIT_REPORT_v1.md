@@ -6,7 +6,7 @@
 ```json
 {
   "name": "mova_agent",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MOVA Agent - Deterministic interpreter runtime for MOVA envelopes",
   "main": "build/index.js",
   "scripts": {
