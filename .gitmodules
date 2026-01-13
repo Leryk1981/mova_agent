@@ -1,3 +1,6 @@
 [submodule "vendor/MOVA"]
 	path = vendor/MOVA
 	url = https://github.com/Leryk1981/MOVA
+[submodule "sdk-cli"]
+	path = sdk-cli
+	url = https://github.com/Leryk1981/mova-sdk-cli.git

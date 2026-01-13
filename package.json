@@ -18,7 +18,9 @@
     "quality:pos": "ts-node scripts/legacy/quality_pos.ts",
     "quality:neg": "ts-node scripts/legacy/quality_neg.ts",
     "dev": "nodemon --exec ts-node tools/mova-agent.ts",
-    "start": "node build/tools/mova-agent.js"
+    "start": "node build/tools/mova-agent.js",
+    "prepublishOnly": "npm run build",
+    "release:version": "npm version patch"
   },
   "keywords": [
     "mova",
@@ -29,6 +31,12 @@
   ],
   "author": "",
   "license": "ISC",
+  "files": [
+    "build",
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
   "devDependencies": {
     "@types/ajv": "^0.0.5",
     "@types/fs-extra": "^11.0.4",
