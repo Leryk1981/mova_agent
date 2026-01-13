@@ -13,6 +13,7 @@ COPY scripts ./scripts
 COPY schemas ./schemas
 COPY vendor ./vendor
 COPY src/types/generated ./src/types/generated
+COPY tools ./tools
 
 # Generate TypeScript types from MOVA schemas
 RUN npm run gen:types
