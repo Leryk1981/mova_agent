@@ -64,6 +64,8 @@ npm run check:docs       # Validate docs have headings (excluding docs/ru)
 - `npm test` — build + gen:types + unit tests (atomic writer, drivers).
 - `npm run build:sdk-cli` — build the MOVA SDK CLI locally.
 - `npm run test:integration` — smoke test CLI → Agent → Episodes flow.
+- `npm run release:version` — bump patch version (uses `npm version patch`).
+- `npm publish` — publish package (CI does this automatically on tags).
 
 ## Compatibility
 - Matrix: see `COMPATIBILITY_MATRIX.md` for tested Agent / SDK CLI / schema-set versions.
@@ -79,3 +81,14 @@ npm run check:docs       # Validate docs have headings (excluding docs/ru)
 
 ## CI/CD
 GitHub Actions: lint → format check → tests → docker-build. Node 18, npm ci.
+- Release workflow (`.github/workflows/release.yml`): runs on tags `v*.*.*`, verifies `package.json` version matches the tag, builds, and publishes to npm using `NPM_TOKEN` secret. Release notes are generated automatically.
+
+## Release
+- Local manual publish:
+  ```bash
+  npm install
+  npm run release:version   # or npm version <patch|minor|major>
+  git push --follow-tags
+  npm publish --access public
+  ```
+- CI publish: push a tag `vX.Y.Z` to trigger `release.yml` (requires `NPM_TOKEN` secret set in repo settings). Docker image publishing can be added later via Docker Hub credentials.
