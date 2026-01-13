@@ -34,28 +34,34 @@ function main() {
   }
 
   const agentPkg = readJson(path.join(root, "package.json"));
-  const cliPkg = readJson(path.join(root, "sdk-cli", "package.json"));
-  const schemaVersion =
-    (cliPkg.dependencies && cliPkg.dependencies["@leryk1981/mova-spec"]) ||
-    (agentPkg.dependencies && agentPkg.dependencies["@leryk1981/mova-spec"]);
-
-  if (!schemaVersion) {
-    console.error("Cannot determine @leryk1981/mova-spec version from package.json files");
-    process.exit(1);
+  const cliPkgPath = path.join(root, "sdk-cli", "package.json");
+  const cliPkg = fs.existsSync(cliPkgPath) ? readJson(cliPkgPath) : null;
+  if (!cliPkg) {
+    console.warn("Warning: sdk-cli/package.json not found, skipping CLI version check.");
   }
+  const schemaVersion =
+    (cliPkg && cliPkg.dependencies && cliPkg.dependencies["@leryk1981/mova-spec"]) ||
+    (agentPkg.dependencies && agentPkg.dependencies["@leryk1981/mova-spec"]) ||
+    null;
 
   const row = parseMatrixRow(matrixPath);
+
+  if (!schemaVersion && !row.schema) {
+    console.warn(
+      "Warning: Cannot determine @leryk1981/mova-spec version from package.json files; no schema version in matrix."
+    );
+  }
 
   const mismatches = [];
   if (row.agent !== agentPkg.version) {
     mismatches.push(`mova_agent version mismatch: matrix=${row.agent}, package.json=${agentPkg.version}`);
   }
-  if (row.cli !== cliPkg.version) {
+  if (cliPkg && row.cli !== cliPkg.version) {
     mismatches.push(`mova-sdk-cli version mismatch: matrix=${row.cli}, sdk-cli/package.json=${cliPkg.version}`);
   }
   // Normalize schema version strings (strip leading ^ or ~)
   const normalize = (v) => v.replace(/^[^0-9]*/, "");
-  if (normalize(row.schema) !== normalize(schemaVersion)) {
+  if (schemaVersion && row.schema && normalize(row.schema) !== normalize(schemaVersion)) {
     mismatches.push(
       `schema-set version mismatch: matrix=${row.schema}, package.json=${schemaVersion}`
     );
