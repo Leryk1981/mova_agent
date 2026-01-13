@@ -62,6 +62,8 @@ npm run check:docs       # Validate docs have headings (excluding docs/ru)
 - `npm run gen:types` — generate `.d.ts` from JSON Schemas.
 - `npm run lint` / `npm run format:check` — style checks.
 - `npm test` — build + gen:types + unit tests (atomic writer, drivers).
+- `npm run build:sdk-cli` — build the MOVA SDK CLI locally.
+- `npm run test:integration` — smoke test CLI → Agent → Episodes flow.
 
 ## Compatibility
 - Matrix: see `COMPATIBILITY_MATRIX.md` for tested Agent / SDK CLI / schema-set versions.
