@@ -11,6 +11,7 @@
     "format:check": "prettier --check \"{src,scripts,test}/**/*.ts\"",
     "check:structure": "ts-node scripts/check_structure.ts",
     "check:docs": "ts-node scripts/check_docs.ts",
+    "verify:compat": "node scripts/verify-compatibility.js",
     "test": "npm run build && npm run gen:types && ts-node test/episodes/episode_writer_atomic.test.ts && ts-node test/drivers/registry.test.ts",
     "quality:pos": "ts-node scripts/legacy/quality_pos.ts",
     "quality:neg": "ts-node scripts/legacy/quality_neg.ts",

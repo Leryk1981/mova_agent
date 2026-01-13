@@ -63,6 +63,11 @@ npm run check:docs       # Validate docs have headings (excluding docs/ru)
 - `npm run lint` / `npm run format:check` — style checks.
 - `npm test` — build + gen:types + unit tests (atomic writer, drivers).
 
+## Compatibility
+- Matrix: see `COMPATIBILITY_MATRIX.md` for tested Agent / SDK CLI / schema-set versions.
+- Check locally: `npm run verify:compat` (runs in CI).
+- On releases: bump versions (Agent `package.json`, `sdk-cli/package.json`, `@leryk1981/mova-spec` dependency) and update the top row of the matrix.
+
 ## Documentation
 - Architecture: `docs/MOVA_AGENT_ARCHITECTURE.md`
 - Roadmap: `docs/MOVA_AGENT_ROADMAP.md`
