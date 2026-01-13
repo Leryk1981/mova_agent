@@ -46,7 +46,9 @@ function rewriteRefs(
       const targetPath = findSchemaPath(normalized, schemaDir);
 
       if (!targetPath) {
-        console.warn(`Warning: could not inline schema for ${value}: not found in known schema dirs`);
+        console.warn(
+          `Warning: could not inline schema for ${value}: not found in known schema dirs`
+        );
         return value;
       }
 
@@ -94,7 +96,9 @@ function rewriteRefs(
 
 async function generateTypes(): Promise<void> {
   if (SCHEMA_DIRS.length === 0) {
-    console.error('No schema directories found (checked schemas/, vendor/MOVA/schemas, package/schemas)');
+    console.error(
+      'No schema directories found (checked schemas/, vendor/MOVA/schemas, package/schemas)'
+    );
     process.exit(1);
   }
 
