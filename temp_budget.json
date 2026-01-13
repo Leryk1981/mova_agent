@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "limits": {
     "max_model_calls": 1,
     "max_tool_calls": 1
