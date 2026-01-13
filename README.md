@@ -10,7 +10,7 @@ Deterministic interpreter runtime for MOVA envelopes with strict typing, atomic 
 - Location: `src/drivers/index.ts`.
 - API: `registerDriver(name, factory)`, `getDriver(name)`, `listDrivers()`.
 - DriverContext supports `allowlist`, `limits`, `bindings`.
-- Built‑in drivers: `noop`, `http` (fetch with allowlist + timeout), `restricted_shell` (execFile with allowlist).
+- Built-in drivers: `noop`, `http` (fetch with allowlist + timeout), `restricted_shell` (execFile with allowlist).
 
 Example:
 ```ts
@@ -26,35 +26,35 @@ registerDriver('my_driver', () => ({
 ## Linting & Formatting
 ```bash
 npm run lint          # ESLint check
-npm run format        # Prettier auto‑format
+npm run format        # Prettier auto-format
 npm run format:check  # Prettier check only
 npm run check:structure  # Ensure .ts files stay in allowed folders
 npm run check:docs       # Validate docs have headings (excluding docs/ru)
 ```
 
 ## Docker Build Verification
-- Dockerfile: multi‑stage on `node:18-alpine`, builds TS + generated types.
+- Dockerfile: multi-stage on `node:18-alpine`, builds TS + generated types.
 - Docker Compose: `docker-compose.yml` exposes port 3000.
 - CI job `docker-build` builds `mova-agent:ci` and runs CLI help:
   `docker run --rm mova-agent:ci node build/tools/mova-agent.js --help`
 - Local check:
-```bash
-docker compose up --build
-curl http://localhost:3000/health
-```
+  ```bash
+  docker compose up --build
+  curl http://localhost:3000/health
+  ```
 
 ## SDK CLI
 - Published package: `@leryk1981/mova-sdk-cli` (npm). Repo: `sdk-cli/` in this project.
 - Install globally: `npm i -g @leryk1981/mova-sdk-cli`
 - Quick use:
-```bash
-mova init my-project                  # scaffold configs/episodes/plans
-mova plan -s env.mova_agent_plan_v1.json plans/plan.sample.json
-mova run plans/plan.sample.json       # local; add --endpoint <url> for MCP gateway
-mova driver:add http                  # generate/register driver skeleton
-mova policy:set --role admin --verb noop --allow
-mova episode:list --verb noop
-```
+  ```bash
+  mova init my-project                  # scaffold configs/episodes/plans
+  mova plan -s env.mova_agent_plan_v1.json plans/plan.sample.json
+  mova run plans/plan.sample.json       # local; add --endpoint <url> for MCP gateway
+  mova driver:add http                  # generate/register driver skeleton
+  mova policy:set --role admin --verb noop --allow
+  mova episode:list --verb noop
+  ```
 - More details: `sdk-cli/README.md`, `sdk-cli/USAGE.md`.
 
 ## Scripts
@@ -63,37 +63,10 @@ mova episode:list --verb noop
 - `npm run lint` / `npm run format:check` — style checks.
 - `npm test` — build + gen:types + unit tests (atomic writer, drivers).
 - `npm run build:sdk-cli` — build the MOVA SDK CLI locally.
-- `npm run test:integration` — **smoke test** CLI → Agent → Episodes flow.
-- `npm run release:version` — bump patch version (uses `npm version patch`).
-- `npm publish` — publish package (CI does this automatically on tags).
-
-## Integration Test Instructions
-1. **Initialize submodules**  
-   ```bash
-   git submodule update --init --recursive
-   ```
-2. **Install root dependencies**  
-   ```bash
-   npm ci
-   ```
-3. **Build the local SDK CLI**  
-   ```bash
-   npm run build:sdk-cli
-   ```
-4. **Run the integration smoke test**  
-   ```bash
-   npm run test:integration
-   ```
-   The test verifies:
-   - `mova init` creates a working project in `tmp/`.
-   - `mova plan` validates a simple plan.
-   - `mova run` generates an episode.
-   - `mova episode:export` successfully exports the created episode.
-
-   On success you will see `All integration tests passed`.
+- `npm run test:integration` — smoke test CLI → Agent → Episodes flow.
 
 ## Compatibility
-- Matrix: see `COMPATIBILITY_MATRIX.md` for tested Agent / SDK CLI / schema‑set versions.
+- Matrix: see `COMPATIBILITY_MATRIX.md` for tested Agent / SDK CLI / schema-set versions.
 - Check locally: `npm run verify:compat` (runs in CI).
 - On releases: bump versions (Agent `package.json`, `sdk-cli/package.json`, `@leryk1981/mova-spec` dependency) and update the top row of the matrix.
 
@@ -105,15 +78,4 @@ mova episode:list --verb noop
 - Linting rules: `docs/linting.md`
 
 ## CI/CD
-GitHub Actions: lint → format check → tests → docker‑build. Node 18, npm ci.
-- Release workflow (`.github/workflows/release.yml`): runs on tags `v*.*.*`, verifies `package.json` version matches the tag, builds, and publishes to npm using `NPM_TOKEN` secret. Release notes are generated automatically.
-
-## Release
-- Local manual publish:
-  ```bash
-  npm install
-  npm run release:version   # or npm version <patch|minor|major>
-  git push --follow-tags
-  npm publish --access public
-  ```
-- CI publish: push a tag `vX.Y.Z` to trigger `release.yml` (requires `NPM_TOKEN` secret set in repo settings). Docker image publishing can be added later via Docker Hub credentials.
+GitHub Actions: lint → format check → tests → docker-build. Node 18, npm ci.
