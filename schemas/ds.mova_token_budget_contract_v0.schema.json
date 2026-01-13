@@ -1,0 +1,175 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "MOVA Token Budget Contract v0",
+  "description": "Contract for controlling token usage and costs in MOVA Agent",
+  "version": "4.1.1",
+  "additionalProperties": false,
+  "required": [
+    "version"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Version of the token budget contract",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "profiles": {
+      "type": "object",
+      "description": "Predefined budget profiles for different use cases",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "limits": {
+            "type": "object",
+            "description": "Token and resource limits",
+            "additionalProperties": false,
+            "properties": {
+              "max_model_calls": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum number of model calls per run"
+              },
+              "max_input_tokens": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum total input tokens per run"
+              },
+              "max_output_tokens": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum total output tokens per run"
+              },
+              "max_total_tokens": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum total tokens (input + output) per run"
+              },
+              "max_output_tokens_per_call": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum output tokens per single model call"
+              },
+              "max_total_cost_usd": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Maximum total cost in USD per run"
+              },
+              "max_tool_calls": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum number of tool calls per run"
+              },
+              "max_tool_output_bytes_total": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum total bytes of tool output that goes into context"
+              },
+              "max_stdout_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum stdout bytes per run"
+              },
+              "max_stderr_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum stderr bytes per run"
+              }
+            }
+          },
+          "policy": {
+            "type": "object",
+            "description": "Policy for handling budget exceedances",
+            "additionalProperties": false,
+            "required": ["on_budget_exceeded"],
+            "properties": {
+              "on_budget_exceeded": {
+                "type": "string",
+                "enum": ["fail", "warn", "truncate_and_continue"],
+                "description": "Action to take when budget is exceeded"
+              },
+              "fail_fast": {
+                "type": "boolean",
+                "description": "Whether to fail fast on any budget violation"
+              }
+            }
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "description": "Token and resource limits",
+      "additionalProperties": false,
+      "properties": {
+        "max_model_calls": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of model calls per run"
+        },
+        "max_input_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum total input tokens per run"
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum total output tokens per run"
+        },
+        "max_total_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum total tokens (input + output) per run"
+        },
+        "max_output_tokens_per_call": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum output tokens per single model call"
+        },
+        "max_total_cost_usd": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum total cost in USD per run"
+        },
+        "max_tool_calls": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of tool calls per run"
+        },
+        "max_tool_output_bytes_total": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum total bytes of tool output that goes into context"
+        },
+        "max_stdout_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum stdout bytes per run"
+        },
+        "max_stderr_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum stderr bytes per run"
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "description": "Policy for handling budget exceedances",
+      "additionalProperties": false,
+      "required": ["on_budget_exceeded"],
+      "properties": {
+        "on_budget_exceeded": {
+          "type": "string",
+          "enum": ["fail", "warn", "truncate_and_continue"],
+          "description": "Action to take when budget is exceeded"
+        },
+        "fail_fast": {
+          "type": "boolean",
+          "description": "Whether to fail fast on any budget violation"
+        }
+      }
+    }
+  }
+}

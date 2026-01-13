@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mova.dev/schemas/ds.mova_agent_step_v1.schema.json",
+  "title": "ds.mova_agent_step_v1",
+  "description": "A single step in a MOVA agent plan",
+  "type": "object",
+  "required": ["id", "verb", "connector_id"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for this step"
+    },
+    "verb": {
+      "type": "string",
+      "description": "Canonical MOVA verb type"
+    },
+    "connector_id": {
+      "type": "string",
+      "description": "ID of the connector to use"
+    },
+    "input": {
+      "type": "object",
+      "description": "Input data for the step"
+    },
+    "input_from": {
+      "type": "object",
+      "description": "Reference to output from a prior step",
+      "properties": {
+        "step_id": {
+          "type": "string",
+          "description": "ID of the step to get input from"
+        },
+        "path": {
+          "type": "string",
+          "description": "Path to extract data from the referenced step's output"
+        }
+      }
+    },
+    "expected_output_schema_ref": {
+      "type": "string",
+      "description": "Reference to expected output schema"
+    },
+    "on_error": {
+      "type": "string",
+      "enum": ["fatal", "soft"],
+      "default": "fatal",
+      "description": "Error handling strategy for this step"
+    }
+  }
+}

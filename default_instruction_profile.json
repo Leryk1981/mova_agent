@@ -1,0 +1,7 @@
+{
+  "caps": {
+    "max_timeout_ms": 10000,
+    "max_data_size": 102400,
+    "max_steps": 10
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mova.dev/schemas/ds.mova_agent_validation_report_v1.schema.json",
+  "title": "ds.mova_agent_validation_report_v1",
+  "description": "Report of validation results for a plan or other artifact",
+  "type": "object",
+  "required": ["artifact_ref", "validation_timestamp", "valid", "results"],
+  "properties": {
+    "artifact_ref": {
+      "type": "string",
+      "description": "Reference to the validated artifact"
+    },
+    "validation_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time when validation was performed"
+    },
+    "valid": {
+      "type": "boolean",
+      "description": "Whether the artifact passed validation"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "message"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["error", "warning", "info"]
+          },
+          "message": {
+            "type": "string",
+            "description": "Description of the validation result"
+          },
+          "path": {
+            "type": "string",
+            "description": "JSON path to the element that generated this result"
+          },
+          "context": {
+            "type": "object",
+            "description": "Additional context about the validation result"
+          }
+        }
+      }
+    }
+  }
+}

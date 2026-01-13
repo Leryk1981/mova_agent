@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mova.dev/schemas/ds.mova_agent_tool_pool_v1.schema.json",
+  "title": "ds.mova_agent_tool_pool_v1",
+  "description": "Allowlist menu of tools with connector contracts and infra bindings",
+  "type": "object",
+  "required": ["tools"],
+  "properties": {
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "connector", "binding"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this tool"
+          },
+          "connector": {
+            "$ref": "https://mova.dev/schemas/ds.connector_core_v1.schema.json"
+          },
+          "binding": {
+            "type": "object",
+            "required": ["driver_kind"],
+            "properties": {
+              "driver_kind": {
+                "type": "string",
+                "enum": ["noop", "http", "restricted_shell", "mcp_proxy"],
+                "description": "Type of handler to use"
+              },
+              "destination_allowlist": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of allowed destinations for this binding"
+              },
+              "limits": {
+                "type": "object",
+                "properties": {
+                  "timeout_ms": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "max_data_size": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              },
+              "schema_refs": {
+                "type": "object",
+                "description": "References to input/output schemas for validation"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

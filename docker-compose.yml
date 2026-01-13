@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  mova-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mova-agent:latest
+    container_name: mova-agent
+    ports:
+      - "3000:3000"
+    environment:
+      # Add any required environment variables, e.g.:
+      # NODE_ENV: production
+    volumes:
+      # Persist episodes/evidence outside the container (optional)
+      - ./episodes:/app/episodes
+      - ./evidence:/app/evidence
+    restart: unless-stopped
+
+# Optional PostgreSQL service for episode storage
+#  postgres:
+#    image: postgres:15-alpine
+#    environment:
+#      POSTGRES_USER: mova
+#      POSTGRES_PASSWORD: mova_pass
+#      POSTGRES_DB: mova_db
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - pgdata:/var/lib/postgresql/data
+
+#volumes

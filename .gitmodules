@@ -1,0 +1,3 @@
+[submodule "vendor/MOVA"]
+	path = vendor/MOVA
+	url = https://github.com/Leryk1981/MOVA

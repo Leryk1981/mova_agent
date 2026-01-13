@@ -1,0 +1,16 @@
+{
+  "steps": [
+    {
+      "id": "step-1",
+      "description": "First tool call",
+      "tool": "noop",
+      "args": {}
+    },
+    {
+      "id": "step-2",
+      "description": "Second tool call, should fail",
+      "tool": "noop",
+      "args": {}
+    }
+  ]
+}

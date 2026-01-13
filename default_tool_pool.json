@@ -1,0 +1,15 @@
+{
+  "tools": [
+    {
+      "id": "noop_connector_1",
+      "connector": { "type": "noop" },
+      "binding": {
+        "driver_kind": "noop",
+        "limits": {
+          "timeout_ms": 1000,
+          "max_data_size": 10240
+        }
+      }
+    }
+  ]
+}

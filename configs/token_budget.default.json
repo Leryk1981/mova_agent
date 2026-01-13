@@ -1,0 +1,75 @@
+{
+  "version": "0.1.0",
+  "profiles": {
+    "quality": {
+      "limits": {
+        "max_model_calls": 5,
+        "max_input_tokens": 10000,
+        "max_output_tokens": 3000,
+        "max_total_tokens": 15000,
+        "max_output_tokens_per_call": 800,
+        "max_total_cost_usd": 0.25,
+        "max_tool_calls": 15,
+        "max_tool_output_bytes_total": 50000,
+        "max_stdout_bytes": 512,
+        "max_stderr_bytes": 1024
+      },
+      "policy": {
+        "on_budget_exceeded": "fail",
+        "fail_fast": true
+      }
+    },
+    "interactive": {
+      "limits": {
+        "max_model_calls": 15,
+        "max_input_tokens": 30000,
+        "max_output_tokens": 9000,
+        "max_total_tokens": 45000,
+        "max_output_tokens_per_call": 1200,
+        "max_total_cost_usd": 0.75,
+        "max_tool_calls": 45,
+        "max_tool_output_bytes_total": 150000,
+        "max_stdout_bytes": 1024,
+        "max_stderr_bytes": 2048
+      },
+      "policy": {
+        "on_budget_exceeded": "warn",
+        "fail_fast": false
+      }
+    },
+    "ci": {
+      "limits": {
+        "max_model_calls": 3,
+        "max_input_tokens": 5000,
+        "max_output_tokens": 1500,
+        "max_total_tokens": 8000,
+        "max_output_tokens_per_call": 500,
+        "max_total_cost_usd": 0.10,
+        "max_tool_calls": 10,
+        "max_tool_output_bytes_total": 25000,
+        "max_stdout_bytes": 256,
+        "max_stderr_bytes": 512
+      },
+      "policy": {
+        "on_budget_exceeded": "fail",
+        "fail_fast": true
+      }
+    }
+  },
+  "limits": {
+    "max_model_calls": 10,
+    "max_input_tokens": 20000,
+    "max_output_tokens": 6000,
+    "max_total_tokens": 30000,
+    "max_output_tokens_per_call": 1000,
+    "max_total_cost_usd": 0.50,
+    "max_tool_calls": 30,
+    "max_tool_output_bytes_total": 100000,
+    "max_stdout_bytes": 1024,
+    "max_stderr_bytes": 2048
+  },
+  "policy": {
+    "on_budget_exceeded": "fail",
+    "fail_fast": false
+  }
+}

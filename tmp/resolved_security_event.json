@@ -1,0 +1,405 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mova.dev/schemas/ds.security_event_episode_core_v1.schema.json",
+  "title": "ds.security_event_episode_core_v1",
+  "description": "Core security episode schema for MOVA: records a security-relevant event with policy reference, severity, and recommended/actual actions.",
+  "allOf": [
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://mova.dev/schemas/ds.mova_episode_core_v1.schema.json",
+      "title": "ds.mova_episode_core_v1",
+      "description": "Core MOVA episode schema: minimal common structure for recording a meaningful step of work.",
+      "allOf": [
+        {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "https://mova.dev/schemas/ds.mova_schema_core_v1.schema.json",
+          "title": "ds.mova_schema_core_v1",
+          "description": "Core form for MOVA data schemas (ds.*) instances: common service fields schema_id, schema_version, meta, ext.",
+          "type": "object",
+          "properties": {
+            "schema_id": {
+              "type": "string",
+              "description": "Canonical schema id for this data record, e.g. ds.smartlink_config_v1. Recommended but optional."
+            },
+            "schema_version": {
+              "type": "string",
+              "description": "Version of the schema used when this record was produced, e.g. 1 or 1.0.0."
+            },
+            "meta": {
+              "type": "object",
+              "description": "Human- and operator-oriented metadata: title, description, tags, notes. Must not contain execution instructions for LLMs.",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "Short human-readable title of this record."
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Longer human-readable description or notes."
+                },
+                "tags": {
+                  "type": "array",
+                  "description": "Optional list of tags for searching and grouping.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "lang": {
+                  "type": "string",
+                  "description": "IETF language tag describing primary human language of title/description, e.g. uk, en, de."
+                }
+              },
+              "additionalProperties": true
+            },
+            "ext": {
+              "type": "object",
+              "description": "Machine-oriented extensions: technical flags, computed hints, links to external systems. Must not contain LLM instructions.",
+              "additionalProperties": true
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "episode_id": {
+              "type": "string",
+              "description": "Unique identifier of this episode, e.g. UUID or composite id."
+            },
+            "episode_type": {
+              "type": "string",
+              "description": "Logical type of the episode, e.g. file_cleanup_plan_review, smartlink_routing_decision."
+            },
+            "mova_version": {
+              "type": "string",
+              "description": "MOVA language version used when recording this episode, e.g. 4.1.1."
+            },
+            "recorded_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Timestamp when the episode record was created."
+            },
+            "started_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Optional timestamp when execution of this episode started."
+            },
+            "finished_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Optional timestamp when execution of this episode finished."
+            },
+            "input_envelopes": {
+              "type": "array",
+              "description": "References to envelopes (env.*) that served as inputs for this episode.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "envelope_type": {
+                    "type": "string",
+                    "description": "Canonical envelope id, e.g. env.file_cleanup_plan_request_v1."
+                  },
+                  "envelope_id": {
+                    "type": "string",
+                    "description": "Identifier of a concrete envelope instance, if applicable."
+                  }
+                },
+                "required": [
+                  "envelope_type"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "input_data_refs": {
+              "type": "array",
+              "description": "References to key data records (ds.*) that form the context of this episode.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "data_type": {
+                    "type": "string",
+                    "description": "Canonical data type id, e.g. ds.file_cleanup_snapshot_v1."
+                  },
+                  "data_id": {
+                    "type": "string",
+                    "description": "Identifier of a concrete data record."
+                  }
+                },
+                "required": [
+                  "data_type"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "executor": {
+              "type": "object",
+              "description": "Description of who or what executed this episode.",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "description": "Executor role, preferably from global.roles (e.g. agent, service, user)."
+                },
+                "executor_id": {
+                  "type": "string",
+                  "description": "Identifier of the executor (user id, service name, agent id, etc.)."
+                },
+                "executor_kind": {
+                  "type": "string",
+                  "description": "High-level executor kind, e.g. human, service, ai_model, tool."
+                },
+                "environment": {
+                  "type": "object",
+                  "description": "Technical environment and version information for this executor.",
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "executor_id"
+              ],
+              "additionalProperties": false
+            },
+            "result_status": {
+              "type": "string",
+              "description": "Status of the episode result. Should align with global.statuses.*.",
+              "enum": [
+                "pending",
+                "in_progress",
+                "completed",
+                "failed",
+                "partial",
+                "cancelled",
+                "skipped"
+              ]
+            },
+            "result_summary": {
+              "type": "string",
+              "description": "Short human-readable summary of what happened in this episode."
+            },
+            "result_details": {
+              "type": "object",
+              "description": "Optional structured details about the result: metrics, quality ratings, explanations.",
+              "additionalProperties": true
+            },
+            "output_data_refs": {
+              "type": "array",
+              "description": "References to new or changed data records (ds.*) produced by this episode.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "data_type": {
+                    "type": "string",
+                    "description": "Canonical data type id, e.g. ds.file_cleanup_plan_v1."
+                  },
+                  "data_id": {
+                    "type": "string",
+                    "description": "Identifier of a concrete data record."
+                  }
+                },
+                "required": [
+                  "data_type"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "meta_episode": {
+              "type": "object",
+              "description": "Optional episode-specific metadata: correlation ids, traces, links to logs. Must not contain LLM instructions.",
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "episode_id",
+            "episode_type",
+            "mova_version",
+            "recorded_at",
+            "executor",
+            "result_status",
+            "result_summary"
+          ],
+          "additionalProperties": false,
+          "anyOf": [
+            {
+              "required": [
+                "input_envelopes"
+              ]
+            },
+            {
+              "required": [
+                "input_data_refs"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "episode_type": {
+          "type": "string",
+          "description": "Episode type must indicate a security event. Convention: security_event[/subtype], where subtype normally matches a security_event_type id.",
+          "pattern": "^security_event(/.+)?$"
+        },
+        "security_event_type": {
+          "type": "string",
+          "description": "Concrete type of security event. Should use an id from global.security_catalog_v1.security_event_type[*].id (e.g. prompt_injection_suspected), or a namespaced custom type (vendorX:custom_event) if extended.",
+          "minLength": 1
+        },
+        "security_event_category": {
+          "type": "string",
+          "description": "High-level category for grouping security events.",
+          "enum": [
+            "auth",
+            "authorization",
+            "policy_violation",
+            "instruction_misuse",
+            "data_access",
+            "rate_limit",
+            "config",
+            "infrastructure",
+            "other"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity of the event from the security perspective.",
+          "enum": [
+            "info",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "policy_profile_id": {
+          "type": "string",
+          "description": "Identifier of the security policy profile that applies, e.g. mova_security_default_v1. Should match an id from global.security_catalog_v1.security_policy_profile[*].id."
+        },
+        "policy_ref": {
+          "type": "object",
+          "description": "Optional reference to the concrete policy document/rule that was triggered.",
+          "properties": {
+            "policy_document_id": {
+              "type": "string",
+              "description": "Identifier or URL of the policy document."
+            },
+            "rule_id": {
+              "type": "string",
+              "description": "Identifier of the concrete rule or clause inside the policy."
+            },
+            "policy_version": {
+              "type": "string",
+              "description": "Version of the policy used for this evaluation."
+            }
+          },
+          "additionalProperties": true
+        },
+        "security_model_version": {
+          "type": "string",
+          "description": "Version of the MOVA security model used when producing this episode, e.g. 1.0.0. Should match the security_model_version of the referenced policy profile in global.security_catalog_v1."
+        },
+        "detection_source": {
+          "type": "string",
+          "description": "Where this security event came from: human_review, rule_engine, runtime_guard, external_system, other.",
+          "enum": [
+            "human_review",
+            "rule_engine",
+            "runtime_guard",
+            "external_system",
+            "other"
+          ]
+        },
+        "detection_confidence": {
+          "type": "number",
+          "description": "Confidence in this event being correctly detected, from 0.0 to 1.0.",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "recommended_actions": {
+          "type": "array",
+          "description": "List of recommended actions in response to this security event.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "action_type": {
+                "type": "string",
+                "description": "Type of recommended action, e.g. log, alert, block, fallback. Should use an id from global.security_catalog_v1.security_action_type[*].id."
+              },
+              "reason": {
+                "type": "string",
+                "description": "Short human-readable explanation why this action is recommended."
+              },
+              "priority": {
+                "type": "string",
+                "description": "Relative priority of this action.",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              }
+            },
+            "required": [
+              "action_type"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "actions_taken": {
+          "type": "array",
+          "description": "List of actions that were actually taken in response to this security event.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "action_type": {
+                "type": "string",
+                "description": "Type of action taken. Should use an id from global.security_catalog_v1.security_action_type[*].id."
+              },
+              "taken_at": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When this action was executed."
+              },
+              "actor": {
+                "type": "string",
+                "description": "Actor that executed the action (service id, user id, tool id, etc.)."
+              },
+              "status": {
+                "type": "string",
+                "description": "Result status of the action.",
+                "enum": [
+                  "completed",
+                  "failed",
+                  "skipped"
+                ]
+              },
+              "details": {
+                "type": "string",
+                "description": "Optional human-readable details about this action."
+              }
+            },
+            "required": [
+              "action_type"
+            ],
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "episode_id",
+        "episode_type",
+        "mova_version",
+        "recorded_at",
+        "executor",
+        "result_status",
+        "result_summary",
+        "security_event_type",
+        "security_event_category",
+        "severity",
+        "security_model_version"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

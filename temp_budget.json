@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "limits": {
+    "max_model_calls": 1,
+    "max_tool_calls": 1
+  },
+  "policy": {
+    "on_budget_exceeded": "fail",
+    "fail_fast": true
+  }
+}

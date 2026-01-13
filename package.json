@@ -1,0 +1,51 @@
+{
+  "name": "mova_agent",
+  "version": "0.1.0",
+  "description": "MOVA Agent - Deterministic interpreter runtime for MOVA envelopes",
+  "main": "build/tools/mova-agent.js",
+  "scripts": {
+    "build": "tsc",
+    "gen:types": "ts-node scripts/gen_types.ts",
+    "lint": "eslint \"{src,scripts,test}/**/*.ts\"",
+    "format": "prettier --write \"{src,scripts,test}/**/*.ts\"",
+    "format:check": "prettier --check \"{src,scripts,test}/**/*.ts\"",
+    "check:structure": "ts-node scripts/check_structure.ts",
+    "check:docs": "ts-node scripts/check_docs.ts",
+    "test": "npm run build && npm run gen:types && ts-node test/episodes/episode_writer_atomic.test.ts && ts-node test/drivers/registry.test.ts",
+    "quality:pos": "ts-node scripts/legacy/quality_pos.ts",
+    "quality:neg": "ts-node scripts/legacy/quality_neg.ts",
+    "dev": "nodemon --exec ts-node tools/mova-agent.ts",
+    "start": "node build/tools/mova-agent.js"
+  },
+  "keywords": [
+    "mova",
+    "agent",
+    "interpreter",
+    "deterministic",
+    "envelope"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/ajv": "^0.0.5",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.19.28",
+    "@typescript-eslint/eslint-plugin": "^8.53.0",
+    "@typescript-eslint/parser": "^8.53.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "json-schema-to-typescript": "^13.1.1",
+    "nodemon": "^3.0.0",
+    "prettier": "^3.7.4",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@types/uuid": "^10.0.0",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "commander": "^11.0.0",
+    "fs-extra": "^11.1.1",
+    "uuid": "^13.0.0"
+  }
+}

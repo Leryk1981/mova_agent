@@ -1,0 +1,45 @@
+// @ts-nocheck
+const { ajvLoader } = require('../../build/src/ajv/ajv_loader');
+
+async function testSchemaLoading() {
+  console.log('Testing schema loading functionality...');
+
+  try {
+    // Тестируем загрузку ds.connector_core_v1 схемы
+    console.log('Testing ds.connector_core_v1 schema loading...');
+    const connectorSchemaExists = await ajvLoader.schemaExists('ds.connector_core_v1');
+    console.log('ds.connector_core_v1 exists: ' + connectorSchemaExists);
+
+    if (connectorSchemaExists) {
+      console.log('Successfully loaded ds.connector_core_v1 schema');
+      const connectorSchema = await ajvLoader.loadSchema('ds.connector_core_v1');
+      console.log('Schema ID: ' + connectorSchema.$id);
+      console.log('Schema title: ' + (connectorSchema.title || 'N/A'));
+    } else {
+      console.log('ERROR: ds.connector_core_v1 schema not found!');
+    }
+
+    // Тестируем загрузку ds.mova_episode_core_v1 схемы
+    console.log('Testing ds.mova_episode_core_v1 schema loading...');
+    const episodeSchemaExists = await ajvLoader.schemaExists('ds.mova_episode_core_v1');
+    console.log('ds.mova_episode_core_v1 exists: ' + episodeSchemaExists);
+
+    if (episodeSchemaExists) {
+      console.log('Successfully loaded ds.mova_episode_core_v1 schema');
+      const episodeSchema = await ajvLoader.loadSchema('ds.mova_episode_core_v1');
+      console.log('Schema ID: ' + episodeSchema.$id);
+      console.log('Schema title: ' + (episodeSchema.title || 'N/A'));
+    } else {
+      console.log('ERROR: ds.mova_episode_core_v1 schema not found!');
+    }
+
+    console.log('All loaded schemas:');
+    console.log(ajvLoader.getLoadedSchemas());
+
+    console.log('Schema loading test completed successfully!');
+  } catch (error) {
+    console.error('Error during schema loading test:', error);
+  }
+}
+
+testSchemaLoading();
