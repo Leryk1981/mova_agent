@@ -4,7 +4,7 @@ import { HandlerRegistry } from '../handlers/registry';
 import { EvidenceWriter } from '../evidence/evidence_writer';
 import { EpisodeWriter, RunEpisodeWriter } from '../episodes/episode_writer';
 import { PolicyEngine, ToolPool, InstructionProfile } from '../policy/policy_engine';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 // Типы для данных
 interface SecurityEvent {
@@ -162,8 +162,8 @@ class Interpreter {
       }
 
       // 4) Build an execution context
-      const runId = `run_${uuidv4()}`;
-      const requestId = `req_${uuidv4()}`;
+      const runId = `run_${randomUUID()}`;
+      const requestId = `req_${randomUUID()}`;
       const evidenceDir = await this.evidenceWriter.createRunDirectory(requestId, runId);
 
       // Create run-specific episode writer
@@ -907,8 +907,8 @@ class Interpreter {
     );
 
     const context: RunContext = {
-      run_id: uuidv4(),
-      request_id: plan.request_id || uuidv4(),
+      run_id: randomUUID(),
+      request_id: plan.request_id || randomUUID(),
       evidence_dir: 'artifacts/mova_agent/evidence',
       instructionProfile: plan.instruction_profile,
       step_inputs: new Map(),
@@ -917,7 +917,10 @@ class Interpreter {
       current_step_index: 0,
       step_security_events: [],
       has_fatal_security_event: false,
-      episodeWriter: this.episodeWriter.createRunWriter(plan.request_id || uuidv4(), uuidv4()),
+      episodeWriter: this.episodeWriter.createRunWriter(
+        plan.request_id || randomUUID(),
+        randomUUID()
+      ),
       tokenMeter,
       tokenBudgetEnforcer,
       budgetStatus: 'passed',
