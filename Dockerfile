@@ -12,7 +12,6 @@ COPY src ./src
 COPY scripts ./scripts
 COPY schemas ./schemas
 COPY vendor ./vendor
-COPY package ./package
 COPY src/types/generated ./src/types/generated
 
 # Generate TypeScript types from MOVA schemas
