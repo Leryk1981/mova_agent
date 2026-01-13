@@ -81,7 +81,7 @@ npm run check:docs       # Validate docs have headings (excluding docs/ru)
 
 ## CI/CD
 GitHub Actions: lint → format check → tests → docker-build. Node 18, npm ci.
-- Release workflow (`.github/workflows/release.yml`): runs on tags `v*.*.*`, verifies `package.json` version matches the tag, builds, and publishes to npm using `NPM_TOKEN` secret. Release notes are generated automatically.
+- Release workflow (`.github/workflows/release.yml`): runs on tags `v*.*.*`, verifies `package.json` version matches the tag, builds, and publishes to npm using the `NPM_TOKEN` secret. Use an npm **automation token** (or configure 2FA to not require OTP for publishing) so CI can publish without an interactive OTP prompt. Release notes are generated automatically.
 
 ## Release
 - Local manual publish:
@@ -91,4 +91,4 @@ GitHub Actions: lint → format check → tests → docker-build. Node 18, npm c
   git push --follow-tags
   npm publish --access public
   ```
-- CI publish: push a tag `vX.Y.Z` to trigger `release.yml` (requires `NPM_TOKEN` secret set in repo settings). Docker image publishing can be added later via Docker Hub credentials.
+- CI publish: push a tag `vX.Y.Z` to trigger `release.yml` (requires `NPM_TOKEN` secret set in repo settings; use an npm automation token or ensure publish does not require OTP). Docker image publishing can be added later via Docker Hub credentials.
