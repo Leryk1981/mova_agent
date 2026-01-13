@@ -43,6 +43,20 @@ npm run check:docs       # Validate docs have headings (excluding docs/ru)
   curl http://localhost:3000/health
   ```
 
+## SDK CLI
+- Published package: `@leryk1981/mova-sdk-cli` (npm). Repo: `sdk-cli/` in this project.
+- Install globally: `npm i -g @leryk1981/mova-sdk-cli`
+- Quick use:
+  ```bash
+  mova init my-project                  # scaffold configs/episodes/plans
+  mova plan -s env.mova_agent_plan_v1.json plans/plan.sample.json
+  mova run plans/plan.sample.json       # local; add --endpoint <url> for MCP gateway
+  mova driver:add http                  # generate/register driver skeleton
+  mova policy:set --role admin --verb noop --allow
+  mova episode:list --verb noop
+  ```
+- More details: `sdk-cli/README.md`, `sdk-cli/USAGE.md`.
+
 ## Scripts
 - `npm run build` — compile to `build/`.
 - `npm run gen:types` — generate `.d.ts` from JSON Schemas.
