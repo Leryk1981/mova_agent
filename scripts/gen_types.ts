@@ -2,10 +2,14 @@ import path from 'path';
 import fs from 'fs-extra';
 import { compile } from 'json-schema-to-typescript';
 
-const SCHEMA_DIRS = [
+const SCHEMA_DIR_CANDIDATES = [
   path.resolve(__dirname, '../schemas'),
   path.resolve(__dirname, '../vendor/MOVA/schemas'),
+  path.resolve(__dirname, '../package/schemas'),
 ];
+
+const SCHEMA_DIRS = SCHEMA_DIR_CANDIDATES.filter((dir) => fs.existsSync(dir));
+const FALLBACK_SCHEMA_DIRS = SCHEMA_DIRS; // reuse discovered dirs for ref resolution
 
 const OUTPUT_DIR = path.resolve(__dirname, '../src/types/generated');
 const BANNER = `/* tslint:disable */
@@ -17,8 +21,18 @@ const BANNER = `/* tslint:disable */
 `;
 
 const MOVA_BASE_URL = 'https://mova.dev/schemas/';
-const VENDOR_SCHEMA_DIR = path.resolve(__dirname, '../vendor/MOVA/schemas');
 const INLINE_CACHE = new Map<string, any>();
+
+function findSchemaPath(normalized: string, primaryDir: string): string | null {
+  const searchDirs = [primaryDir, ...FALLBACK_SCHEMA_DIRS];
+  for (const dir of searchDirs) {
+    const candidate = path.join(dir, normalized);
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
 
 function rewriteRefs(
   value: any,
@@ -29,10 +43,12 @@ function rewriteRefs(
     if (value.startsWith(MOVA_BASE_URL)) {
       const fileName = value.replace(MOVA_BASE_URL, '');
       const normalized = fileName.endsWith('.schema.json') ? fileName : `${fileName}.schema.json`;
-      const localPath = path.join(schemaDir, normalized);
-      const targetPath = fs.existsSync(localPath)
-        ? localPath
-        : path.join(VENDOR_SCHEMA_DIR, normalized);
+      const targetPath = findSchemaPath(normalized, schemaDir);
+
+      if (!targetPath) {
+        console.warn(`Warning: could not inline schema for ${value}: not found in known schema dirs`);
+        return value;
+      }
 
       if (INLINE_CACHE.has(targetPath)) {
         return INLINE_CACHE.get(targetPath);
@@ -77,6 +93,11 @@ function rewriteRefs(
 }
 
 async function generateTypes(): Promise<void> {
+  if (SCHEMA_DIRS.length === 0) {
+    console.error('No schema directories found (checked schemas/, vendor/MOVA/schemas, package/schemas)');
+    process.exit(1);
+  }
+
   await fs.ensureDir(OUTPUT_DIR);
 
   const exported: string[] = [];
