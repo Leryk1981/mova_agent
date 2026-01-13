@@ -1,7 +1,18 @@
 import fs from 'fs';
 import path from 'path';
 
-const allowedRoots = new Set(['src', 'scripts', 'test', 'docs', 'configs', '.github']);
+const allowedRoots = new Set([
+  'src',
+  'scripts',
+  'test',
+  'tests',
+  'docs',
+  'configs',
+  'tools',
+  'sdk-cli',
+  'vendor',
+  '.github',
+]);
 const ignored = new Set([
   'node_modules',
   'build',
