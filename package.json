@@ -1,6 +1,6 @@
 {
   "name": "mova_agent",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "description": "MOVA Agent - Deterministic interpreter runtime for MOVA envelopes",
   "main": "build/tools/mova-agent.js",
   "scripts": {
