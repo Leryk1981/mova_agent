@@ -1,18 +1,10 @@
-export type DriverContext = {
-  driverName?: string;
-  allowlist?: string[];
-  limits?: {
-    timeout_ms?: number;
-    max_data_size?: number;
-  };
-  bindings?: any;
-};
-
-export type Driver = {
-  execute(input: any, context?: DriverContext): Promise<any>;
-};
-
-type DriverFactory = () => Driver;
+import {
+  Driver,
+  DriverContext,
+  DriverFactory,
+  httpDriverFactory,
+  restrictedShellDriverFactory
+} from '@leryk1981/mova-executors';
 
 const driverFactories = new Map<string, DriverFactory>();
 
@@ -39,10 +31,13 @@ registerDriver('noop', () => ({
   },
 }));
 
-import { httpDriverFactory } from './httpDriver';
-import { restrictedShellDriverFactory } from './restrictedShellDriver';
-
 registerDriver('http', httpDriverFactory);
 registerDriver('restricted_shell', restrictedShellDriverFactory);
 
-export { httpDriverFactory, restrictedShellDriverFactory };
+export {
+  Driver,
+  DriverContext,
+  DriverFactory,
+  httpDriverFactory,
+  restrictedShellDriverFactory
+};
