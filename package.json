@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@leryk1981/mova-core-engine": "^0.1.1",
+    "@leryk1981/mova-spec": "^4.1.1",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
     "commander": "^11.0.0",

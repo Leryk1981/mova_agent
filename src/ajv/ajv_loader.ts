@@ -5,12 +5,14 @@ import {
   AjvSchemaLoader as CoreAjvSchemaLoader,
   ValidationResult,
 } from '@leryk1981/mova-core-engine';
+import { resolveMovaSpecRoot } from '../spec/spec_root_resolver';
 
 // Класс для загрузки и валидации схем (обертка над core-engine)
 class AjvSchemaLoader {
   private loader: CoreAjvSchemaLoader;
   private schemaCache: Map<string, any>;
   private schemaSourcePaths: Map<string, string>;
+  private specSchemasDir: string;
 
   // Getter to access the AJV instance for advanced validation
   get getAjv(): Ajv {
@@ -22,6 +24,8 @@ class AjvSchemaLoader {
     this.loader = new CoreAjvSchemaLoader();
     this.schemaCache = new Map();
     this.schemaSourcePaths = new Map();
+    const { schemasDir } = resolveMovaSpecRoot();
+    this.specSchemasDir = schemasDir;
   }
 
   /**
@@ -31,15 +35,16 @@ class AjvSchemaLoader {
     // Определяем путь к схеме
     let schemaPath: string;
 
-    // First try local project schemas, then vendor schemas as fallback
+    // First try local project schemas, then npm spec package, then vendor fallback
     const possibleBasePaths = [
       path.resolve(__dirname, '../../../schemas'), // Local schemas when built to build/src/ajv/
       path.resolve(__dirname, '../../schemas'), // Alternative local path
+      this.specSchemasDir,
       path.resolve(__dirname, '../../../../schemas'), // Another local path option
-      // Vendor schemas as fallback for MOVA schemas not found locally
-      path.resolve(__dirname, '../../../vendor/MOVA/schemas'), // From build/src/ajv/
-      path.resolve(__dirname, '../../vendor/MOVA/schemas'), // Alternative from build/src/ajv/
-      path.resolve(__dirname, '../../../../vendor/MOVA/schemas'), // From build/tools/ or similar
+      // Vendor schemas as fallback for MOVA schemas not found locally (dev mode)
+      path.resolve(__dirname, '../../../vendor/MOVA/schemas'),
+      path.resolve(__dirname, '../../vendor/MOVA/schemas'),
+      path.resolve(__dirname, '../../../../vendor/MOVA/schemas'),
     ];
 
     let basePathFound = '';
