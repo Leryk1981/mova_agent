@@ -2,6 +2,7 @@ import { AjvSchemaLoader } from './ajv_loader';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { getLogger } from '../logging/logger';
+import { resolveMovaSpecRoot } from '../spec/spec_root_resolver';
 
 class SchemaRegistry {
   private loader: AjvSchemaLoader;
@@ -15,9 +16,14 @@ class SchemaRegistry {
    */
   async loadAllMovaSchemas(): Promise<void> {
     const logger = getLogger();
-    const movaSchemasDir = path.join(__dirname, '..', '..', '..', 'vendor', 'MOVA', 'schemas');
+    let movaSchemasDir: string | null = null;
+    try {
+      movaSchemasDir = resolveMovaSpecRoot().schemasDir;
+    } catch (e: any) {
+      logger.error(`MOVA spec resolver failed: ${e?.message || e}`);
+    }
 
-    if (await fs.pathExists(movaSchemasDir)) {
+    if (movaSchemasDir && (await fs.pathExists(movaSchemasDir))) {
       const schemaFiles = await fs.readdir(movaSchemasDir);
 
       for (const file of schemaFiles) {
@@ -33,7 +39,7 @@ class SchemaRegistry {
         }
       }
     } else {
-      logger.error(`MOVA schemas directory not found: ${movaSchemasDir}`);
+      logger.error(`MOVA schemas directory not found (resolved: ${movaSchemasDir || 'n/a'})`);
     }
   }
 

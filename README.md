@@ -71,6 +71,7 @@ npm run check:docs       # Validate docs have headings (excluding docs/ru)
 - Matrix: see `COMPATIBILITY_MATRIX.md` for tested Agent / SDK CLI / schema-set versions.
 - Check locally: `npm run verify:compat` (runs in CI).
 - On releases: bump versions (Agent `package.json`, `sdk-cli/package.json`, `@leryk1981/mova-spec` dependency) and update the top row of the matrix.
+- Schemas: resolved from npm `@leryk1981/mova-spec` by default (via resolver); a local `vendor/MOVA` checkout can be used for dev, but is not required.
 
 ## Documentation
 - Architecture: `docs/MOVA_AGENT_ARCHITECTURE.md`

@@ -15,6 +15,7 @@
     "build:sdk-cli": "node scripts/run_sdk_cli.js build",
     "test:integration": "node scripts/run_sdk_cli.js test:integration",
     "test": "npm run build && npm run gen:types && ts-node test/episodes/episode_writer_atomic.test.ts && ts-node test/drivers/registry.test.ts",
+    "smoke:core-engine": "node tools/core_engine_probe_v0.mjs",
     "quality:pos": "ts-node scripts/legacy/quality_pos.ts",
     "quality:neg": "ts-node scripts/legacy/quality_neg.ts",
     "dev": "nodemon --exec ts-node tools/mova-agent.ts",
@@ -52,6 +53,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@leryk1981/mova-core-engine": "^0.1.1",
+    "@leryk1981/mova-spec": "^4.1.1",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
     "commander": "^11.0.0",
