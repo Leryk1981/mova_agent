@@ -1,0 +1,50 @@
+{
+  "agent": {
+    "drivers": [
+      {
+        "id": "http",
+        "path": "src/drivers/httpDriver.ts",
+        "type": "http",
+        "interfaces": { "input": ["url|endpoint", "method", "headers", "body"], "output": ["status", "headers", "body", "url"] },
+        "policies": { "allowlist": "host/protocol match", "timeout_ms_default": 5000 },
+        "dependencies": ["node fetch"],
+        "es_module": false,
+        "secrets": "none",
+        "risks": ["no size cap; permissive when allowlist empty"]
+      },
+      {
+        "id": "restricted_shell",
+        "path": "src/drivers/restrictedShellDriver.ts",
+        "type": "local_shell",
+        "interfaces": { "input": ["command", "args[]"], "output": ["stdout", "stderr", "exit_code", "command", "args"] },
+        "policies": { "allowlist": "prefix match", "timeout_ms_default": 5000 },
+        "dependencies": ["child_process.execFile"],
+        "es_module": false,
+        "secrets": "none",
+        "risks": ["allowlist optional → wide if not provided"]
+      }
+    ],
+    "registry": {
+      "path": "src/drivers/index.ts",
+      "notes": "noop built-in; registers http/restricted_shell; used by handlers/interpreter"
+    }
+  },
+  "station": {
+    "drivers": [
+      { "id": "local_shell_v0", "path": "executors/local_shell_v0/driver/driver_local_shell_v0.mjs", "type": "local_shell", "guarded": true },
+      { "id": "opencode_server_v1", "path": "executors/opencode_server_v1/driver/driver_opencode_v1.mjs", "type": "remote_http+sse", "guarded": true, "secrets": "engine/env" },
+      { "id": "cloudflare_worker_gateway_v0", "path": "executors/cloudflare_worker_gateway_v0/driver/driver_cf_gateway_v0.mjs", "type": "remote_gateway", "guarded": true, "secrets": "CF tokens/R2/D1" },
+      { "id": "cloudflare_worker_v1", "path": "executors/cloudflare_worker_v1/driver/driver_cloudflare_worker_v1.mjs", "type": "cloudflare_stub", "guarded": true, "notes": "NOT_IMPLEMENTED" }
+    ],
+    "router": "executors/executor_router_v0.mjs, executor_router_v1.mjs"
+  },
+  "scope_v0": {
+    "include": ["driver types/registry interface (minimal)", "restricted_shell driver", "http driver", "shared result helpers"],
+    "exclude": ["cloudflare worker/gateway", "opencode", "deploy/CI scripts", "executor routers"]
+  },
+  "evidence": {
+    "agent_scan": "rg -n \"Driver|driver|execut(or|ors)|router|dispatch|run.*command|spawn|execa|fetch\\(|undici|http(s)?\\.\" src tools sdk-cli",
+    "agent_scan2": "rg -n \"restrictedShellDriver|httpDriver|cloudflare|wrangler|opencode\" src tools",
+    "station_scan": "rg -n \"executors/|driver_|executor_router|cloudflare|opencode|local_shell|wrangler|fetch(\" ."
+  }
+}

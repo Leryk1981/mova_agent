@@ -4,7 +4,7 @@ This table lists tested and supported combinations of MOVA Agent runtime, MOVA S
 
 | mova_agent version | mova-sdk-cli version | core engine version (@leryk1981/mova-core-engine) | schema-set version (@leryk1981/mova-spec) | Notes |
 | --- | --- | --- | --- | --- |
-| 0.1.1 | 0.1.1 | 0.1.1 | 4.1.1 | Schemas resolved from npm @leryk1981/mova-spec; CI tests agent + CLI |
+| 0.1.1 | 0.1.1 | 0.1.1 | 4.1.1 | Schemas from npm @leryk1981/mova-spec; executors package @leryk1981/mova-executors 0.1.1; CI tests agent + CLI |
 
 ## Compatibility rules
 - Patch (x.y.Z): bug fixes only; no breaking schema or CLI changes expected.
