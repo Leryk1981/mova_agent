@@ -15,13 +15,14 @@ function parseMatrixRow(matrixPath) {
     throw new Error("No data rows found in compatibility matrix");
   }
   const cells = dataRows[0].split("|").map((c) => c.trim()).filter(Boolean);
-  if (cells.length < 3) {
+  if (cells.length < 4) {
     throw new Error("Matrix row does not contain required columns");
   }
   return {
     agent: cells[0],
     cli: cells[1],
-    schema: cells[2],
+    core: cells[2],
+    schema: cells[3],
   };
 }
 

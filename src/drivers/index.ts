@@ -3,7 +3,7 @@ import {
   DriverContext,
   DriverFactory,
   httpDriverFactory,
-  restrictedShellDriverFactory
+  restrictedShellDriverFactory,
 } from '@leryk1981/mova-executors';
 
 const driverFactories = new Map<string, DriverFactory>();
@@ -34,10 +34,4 @@ registerDriver('noop', () => ({
 registerDriver('http', httpDriverFactory);
 registerDriver('restricted_shell', restrictedShellDriverFactory);
 
-export {
-  Driver,
-  DriverContext,
-  DriverFactory,
-  httpDriverFactory,
-  restrictedShellDriverFactory
-};
+export { Driver, DriverContext, DriverFactory, httpDriverFactory, restrictedShellDriverFactory };
