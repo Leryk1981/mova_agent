@@ -6,6 +6,13 @@ Russian originals are kept in `docs/ru/`. This README and all docs are the Engli
 ## Overview
 Deterministic interpreter runtime for MOVA envelopes with strict typing, atomic evidence/episode writing, plugin driver registry, and CI/CD with Docker.
 
+## Architecture / Packages
+- Runtime core: `@leryk1981/mova-core-engine@0.1.1` (validation, policy, evidence/episodes).
+- Executors: `@leryk1981/mova-executors@0.1.1` (restricted shell + HTTP drivers with allowlists/timeouts).
+- Schemas: `@leryk1981/mova-spec@4.1.1` resolved via npm (no local submodule required).
+- CLI: `@leryk1981/mova-sdk-cli` (lives in `sdk-cli/`), optional for local runs.
+- Agent registry: `src/drivers/index.ts` wires npm executors; `tools/core_engine_probe_v0.mjs` / `tools/executors_probe_v0.mjs` smoke the packages.
+
 ## Plugin Driver Registry
 - Location: `src/drivers/index.ts`.
 - API: `registerDriver(name, factory)`, `getDriver(name)`, `listDrivers()`.
@@ -93,3 +100,13 @@ GitHub Actions: lint → format check → tests → docker-build. Node 18, npm c
   npm publish --access public
   ```
 - CI publish: push a tag `vX.Y.Z` to trigger `release.yml` (requires `NPM_TOKEN` secret set in repo settings; use an npm automation token or ensure publish does not require OTP). Docker image publishing can be added later via Docker Hub credentials.
+
+## Verification
+Run locally before publishing/merging:
+```
+npm ci
+npm run -s build
+npm test
+npm run -s smoke:core-engine   # tools/core_engine_probe_v0.mjs
+npm run -s smoke:executors     # tools/executors_probe_v0.mjs
+```
