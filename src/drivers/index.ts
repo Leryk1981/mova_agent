@@ -5,6 +5,7 @@ import {
   httpDriverFactory,
   restrictedShellDriverFactory,
 } from '@leryk1981/mova-executors';
+import { noopDeliveryDriverV0Factory } from './noop_delivery_driver_v0';
 
 const driverFactories = new Map<string, DriverFactory>();
 
@@ -33,5 +34,13 @@ registerDriver('noop', () => ({
 
 registerDriver('http', httpDriverFactory);
 registerDriver('restricted_shell', restrictedShellDriverFactory);
+registerDriver('noop_delivery_v0', noopDeliveryDriverV0Factory);
 
-export { Driver, DriverContext, DriverFactory, httpDriverFactory, restrictedShellDriverFactory };
+export {
+  Driver,
+  DriverContext,
+  DriverFactory,
+  httpDriverFactory,
+  restrictedShellDriverFactory,
+  noopDeliveryDriverV0Factory,
+};

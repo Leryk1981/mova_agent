@@ -1,0 +1,8 @@
+node_modules
+build
+dist
+temp_dist
+test_dist
+artifacts
+src/types/generated
+scripts/legacy

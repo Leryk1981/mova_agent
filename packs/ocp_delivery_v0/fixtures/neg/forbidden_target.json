@@ -1,0 +1,7 @@
+{
+  "target": "https://prod.example.com/webhook",
+  "payload": {
+    "package_id": "should-not-send"
+  },
+  "dry_run": true
+}

@@ -1,0 +1,17 @@
+node_modules/
+build/
+packages/
+sdk-cli/
+tmp/
+temp_dist/
+test_dist/
+dist/
+coverage/
+.vscode/
+.idea/
+.claude/
+*.log
+*.tgz
+wsl
+artifacts/**
+!artifacts/.gitkeep
