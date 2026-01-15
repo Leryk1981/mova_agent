@@ -1,0 +1,10 @@
+{
+  "target_url": "{{WEBHOOK_URL}}/flaky2",
+  "payload": {
+    "order_id": "retry-flaky-001"
+  },
+  "metadata": {
+    "trace_id": "retry-flaky-two-then-ok"
+  },
+  "idempotency_key": "retry-flaky-two-then-ok"
+}

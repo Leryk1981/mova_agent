@@ -1,0 +1,10 @@
+{
+  "target_url": "{{WEBHOOK_URL}}/timeout1",
+  "payload": {
+    "order_id": "retry-timeout-001"
+  },
+  "metadata": {
+    "trace_id": "retry-timeout-then-ok"
+  },
+  "idempotency_key": "retry-timeout-then-ok"
+}

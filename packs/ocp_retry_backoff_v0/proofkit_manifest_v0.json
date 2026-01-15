@@ -1,0 +1,28 @@
+{
+  "id": "ocp_retry_backoff_v0",
+  "version": "0.0.1",
+  "claim": "Outbound delivery retries deterministically on retryable failures and records attempt evidence.",
+  "surface": "ocp.delivery.v1",
+  "scripts": {
+    "pos": "npm run quality:ocp_retry_backoff",
+    "neg": "npm run quality:ocp_retry_backoff:neg"
+  },
+  "fixtures": {
+    "pos": [
+      "packs/ocp_retry_backoff_v0/fixtures/pos/flaky_2_then_ok.json",
+      "packs/ocp_retry_backoff_v0/fixtures/pos/timeout_then_ok.json"
+    ],
+    "neg": [
+      "packs/ocp_retry_backoff_v0/fixtures/neg/http_400_no_retry.json",
+      "packs/ocp_retry_backoff_v0/fixtures/neg/retry_exhausted_500.json"
+    ]
+  },
+  "evidence": {
+    "pos_base": "artifacts/quality/ocp_retry_backoff_v0/pos",
+    "neg_base": "artifacts/quality/ocp_retry_backoff_v0/neg",
+    "expected_files": [
+      "pos_report.json",
+      "neg_report.json"
+    ]
+  }
+}

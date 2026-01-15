@@ -1,0 +1,10 @@
+{
+  "target_url": "{{WEBHOOK_URL}}/always500",
+  "payload": {
+    "order_id": "retry-always-500"
+  },
+  "metadata": {
+    "trace_id": "retry-always-500"
+  },
+  "idempotency_key": "retry-always-500"
+}

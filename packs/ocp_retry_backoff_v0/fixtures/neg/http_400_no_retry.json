@@ -1,0 +1,10 @@
+{
+  "target_url": "{{WEBHOOK_URL}}/bad400",
+  "payload": {
+    "order_id": "retry-bad-400"
+  },
+  "metadata": {
+    "trace_id": "retry-http-400"
+  },
+  "idempotency_key": "retry-http-400"
+}
