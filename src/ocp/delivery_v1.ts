@@ -9,6 +9,7 @@ import type {
   WebhookDeliveryInputV1,
   WebhookDeliveryOutputV1,
 } from '../drivers/http_webhook_delivery_driver_v1';
+import { IdempotencyStoreV0, IDEMPOTENCY_ERRORS } from './idempotency_store_v0';
 
 const DEFAULT_POLICY_ID = 'ocp_delivery_dev_local_v0';
 
@@ -17,6 +18,7 @@ export interface OcpDeliveryV1Request {
   payload?: any;
   metadata?: Record<string, unknown>;
   request_id?: string;
+  idempotency_key?: string;
 }
 
 export interface OcpDeliveryV1Result {
@@ -142,12 +144,73 @@ export async function runOcpDeliveryV1(
   const runId = `run_${randomUUID()}`;
   const evidenceDir = path.join('artifacts', 'ocp_delivery_v1', requestId, 'runs', runId);
   await fs.ensureDir(evidenceDir);
-
-  const driver = getDriver('http_webhook_delivery_v1');
+  const evidenceWriter = new EvidenceWriter();
   const payload = request.payload ?? {};
-
   const bodyHash = createHash('sha256').update(JSON.stringify(payload), 'utf8').digest('hex');
   const targetHost = new URL(request.target_url).hostname;
+
+  const idemStore = new IdempotencyStoreV0();
+  await idemStore.init();
+
+  const idemKey = request.idempotency_key;
+  const requireIdem = process.env.OCP_REQUIRE_IDEMPOTENCY === '1';
+  const suppressionEnabled = idemKey && idemKey.length > 0;
+
+  if (suppressionEnabled) {
+    const existing = idemStore.get(idemKey as string);
+    if (existing) {
+      if (existing.payload_sha256 === bodyHash) {
+        const suppressedResultCore = {
+          request_id: requestId,
+          run_id: runId,
+          driver_kind: 'http_webhook_delivery_v1',
+          target_url: request.target_url,
+          delivered: false,
+          status_code: IDEMPOTENCY_ERRORS.SUPPRESSED_DUPLICATE,
+          dry_run: false as const,
+          original_evidence_path: existing.first_evidence_path,
+        } as any;
+
+        await evidenceWriter.writeArtifact(evidenceDir, 'request.json', {
+          ...request,
+          target_url: request.target_url,
+          payload,
+          metadata: request.metadata,
+        });
+        await evidenceWriter.writeArtifact(evidenceDir, 'result_core.json', suppressedResultCore);
+        await evidenceWriter.writeArtifact(evidenceDir, 'evidence.json', {
+          policy_profile_id: profileId,
+          policy_allowed: policyDecision.allowed,
+          policy_reason: policyDecision.reason,
+          target_host: targetHost,
+          request_body_sha256: bodyHash,
+          suppressed: true,
+          original_evidence_path: existing.first_evidence_path,
+          timestamp: new Date().toISOString(),
+        });
+
+        return {
+          result_core: suppressedResultCore,
+          evidence: {
+            request_id: requestId,
+            run_id: runId,
+            evidence_dir: evidenceDir,
+            artifacts: {
+              request: path.join(evidenceDir, 'request.json'),
+              result_core: path.join(evidenceDir, 'result_core.json'),
+              evidence: path.join(evidenceDir, 'evidence.json'),
+            },
+          },
+        };
+      } else {
+        throw new Error(IDEMPOTENCY_ERRORS.IDEMPOTENCY_CONFLICT);
+      }
+    }
+  } else if (requireIdem) {
+    throw new Error(IDEMPOTENCY_ERRORS.MISSING_IDEMPOTENCY_KEY);
+  }
+
+  const driver = getDriver('http_webhook_delivery_v1');
 
   const driverInput: WebhookDeliveryInputV1 = {
     target_url: request.target_url,
@@ -172,7 +235,6 @@ export async function runOcpDeliveryV1(
     dry_run: false as const,
   };
 
-  const evidenceWriter = new EvidenceWriter();
   await evidenceWriter.writeArtifact(evidenceDir, 'request.json', {
     ...request,
     target_url: request.target_url,
@@ -190,7 +252,16 @@ export async function runOcpDeliveryV1(
     response_body_sha256: driverResult.response_body_sha256,
     duration_ms: driverResult.duration_ms,
     timestamp: new Date().toISOString(),
+    suppressed: false,
   });
+
+  // Record idempotency entry for future suppression
+  await idemStore.record(
+    request.idempotency_key as string,
+    bodyHash,
+    path.join(evidenceDir, 'evidence.json'),
+    Date.now()
+  );
 
   logger.info(`OCP delivery v1 webhook run recorded at ${evidenceDir}`);
 

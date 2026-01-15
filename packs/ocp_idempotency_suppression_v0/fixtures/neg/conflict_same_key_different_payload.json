@@ -1,0 +1,10 @@
+{
+  "target_url": "http://127.0.0.1:0/hook",
+  "idempotency_key": "idem-key-001",
+  "payload": {
+    "order_id": "idem-002",
+    "items": [
+      { "sku": "other", "qty": 2 }
+    ]
+  }
+}

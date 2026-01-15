@@ -39,6 +39,19 @@
         "pos_dir": "artifacts/quality/ocp_delivery_v1/pos",
         "neg_dir": "artifacts/quality/ocp_delivery_v1/neg"
       }
+    },
+    {
+      "id": "ocp_idempotency_suppression_v0",
+      "version": "0.0.1",
+      "manifest": "packs/ocp_idempotency_suppression_v0/proofkit_manifest_v0.json",
+      "scripts": {
+        "pos": "npm run quality:ocp_idempotency_suppression",
+        "neg": "npm run quality:ocp_idempotency_suppression:neg"
+      },
+      "evidence": {
+        "pos_dir": "artifacts/quality/ocp_idempotency_suppression_v0/pos",
+        "neg_dir": "artifacts/quality/ocp_idempotency_suppression_v0/neg"
+      }
     }
   ]
 }
