@@ -23,6 +23,8 @@
     "quality:ocp_delivery:neg": "npm run build && node tools/quality_ocp_delivery_v0_neg.mjs",
     "quality:external_call_webhook": "npm run build && node tools/quality_external_call_webhook_v0.mjs",
     "quality:external_call_webhook:neg": "npm run build && node tools/quality_external_call_webhook_v0_neg.mjs",
+    "quality:ocp_delivery_v1": "npm run build && node tools/quality_ocp_delivery_v1.mjs",
+    "quality:ocp_delivery_v1:neg": "npm run build && node tools/quality_ocp_delivery_v1_neg.mjs",
     "proofkit:run": "node tools/proofkit_run_v0.mjs",
     "proofkit:all": "node tools/proofkit_run_v0.mjs --all",
     "dev": "nodemon --exec ts-node tools/mova-agent.ts",
