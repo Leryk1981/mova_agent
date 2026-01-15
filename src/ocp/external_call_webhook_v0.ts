@@ -71,7 +71,8 @@ webhookPolicy.addRule({
   id: 'deny-forbidden-webhook-targets-v0',
   action: 'deny',
   priority: 120,
-  condition: (context: any) => typeof context.object_ref === 'string' && isForbiddenTarget(context.object_ref),
+  condition: (context: any) =>
+    typeof context.object_ref === 'string' && isForbiddenTarget(context.object_ref),
   description: 'Real endpoints are forbidden in v0',
 });
 
