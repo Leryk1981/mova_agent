@@ -58,6 +58,15 @@ async function main() {
     process.env.OCP_ENABLE_REAL_SEND = '1';
     process.env.WEBHOOK_SIGNING_SECRET = SECRET;
     process.env.OCP_POLICY_PROFILE_ID = PROFILE_ID;
+    const storePath = path.join(
+      'artifacts',
+      'ocp_idempotency_store_v0',
+      `store_${Date.now()}_pos.json`
+    );
+    process.env.OCP_IDEMPOTENCY_STORE_PATH = storePath;
+    if (await fs.pathExists(storePath)) {
+      await fs.remove(storePath);
+    }
 
     const fixturePath = path.join(
       __dirname,

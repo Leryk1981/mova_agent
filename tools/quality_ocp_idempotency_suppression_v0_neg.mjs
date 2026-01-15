@@ -47,11 +47,18 @@ async function main() {
     process.env.OCP_ENABLE_REAL_SEND = '1';
     process.env.WEBHOOK_SIGNING_SECRET = 'test_secret_v1';
     process.env.OCP_POLICY_PROFILE_ID = 'ocp_delivery_dev_local_v0';
-    process.env.OCP_IDEMPOTENCY_STORE_PATH = path.join(
+    const storeDir = path.join(
       'artifacts',
-      'ocp_idempotency_store_v0',
-      `store_${Date.now()}_neg.json`
+      'quality',
+      'ocp_idempotency_suppression_v0',
+      'neg',
+      `run_${Date.now()}`
     );
+    const storePath = path.join(storeDir, 'store.json');
+    if (await fs.pathExists(storePath)) {
+      await fs.remove(storePath);
+    }
+    process.env.OCP_IDEMPOTENCY_STORE_PATH = storePath;
     process.env.OCP_REQUIRE_IDEMPOTENCY = '1';
 
     // Seed store with base payload to ensure conflicts are detected
