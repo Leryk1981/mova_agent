@@ -32,11 +32,18 @@ async function main() {
     process.env.OCP_ENABLE_REAL_SEND = '1';
     process.env.WEBHOOK_SIGNING_SECRET = 'test_secret_v1';
     process.env.OCP_POLICY_PROFILE_ID = 'ocp_delivery_dev_local_v0';
-    process.env.OCP_IDEMPOTENCY_STORE_PATH = path.join(
+    const storeDir = path.join(
       'artifacts',
-      'ocp_idempotency_store_v0',
-      `store_${Date.now()}.json`
+      'quality',
+      'ocp_idempotency_suppression_v0',
+      'pos',
+      `run_${Date.now()}`
     );
+    const storePath = path.join(storeDir, 'store.json');
+    if (await fs.pathExists(storePath)) {
+      await fs.remove(storePath);
+    }
+    process.env.OCP_IDEMPOTENCY_STORE_PATH = storePath;
 
     const firstFixture = await fs.readJson(
       path.join(__dirname, '../packs/ocp_idempotency_suppression_v0/fixtures/pos/first_send.json')

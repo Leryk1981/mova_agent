@@ -10,3 +10,10 @@
 - Run: `npm run smoke:ocp_delivery:staging`.
 - Required env vars: `OCP_STAGING_WEBHOOK_URL`, `OCP_STAGING_SIGNING_SECRET`.
 - Evidence: `artifacts/smoke/ocp_delivery_staging/<run_id>/smoke_evidence.json`.
+
+## Start here
+1. `npm run ocp:doctor`
+2. `npm run smoke:ocp_delivery:staging`
+3. `npm run proofkit:run -- ocp_delivery_v1`
+
+Doctor evidence: `artifacts/doctor/ocp_delivery/<run_id>/doctor_report.json`.

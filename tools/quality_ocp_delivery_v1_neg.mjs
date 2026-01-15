@@ -35,6 +35,7 @@ async function runScenario(name, requestBuilder, env) {
   process.env.OCP_ENABLE_REAL_SEND = env.enable ?? '';
   process.env.WEBHOOK_SIGNING_SECRET = env.secret ?? '';
   process.env.OCP_POLICY_PROFILE_ID = env.profile ?? PROFILE_ID;
+  process.env.OCP_IDEMPOTENCY_STORE_PATH = env.storePath || '';
   try {
     const req = await requestBuilder();
     await runOcpDeliveryV1(req);
@@ -49,25 +50,36 @@ async function main() {
   const localUrl = `http://127.0.0.1:${port}/hook`;
 
   try {
+    const storePath = path.join(
+      'artifacts',
+      'quality',
+      'ocp_delivery_v1',
+      'neg',
+      `store_${Date.now()}_v1_neg.json`
+    );
+    if (await fs.pathExists(storePath)) {
+      await fs.remove(storePath);
+    }
+
     const scenarios = [
       {
         name: 'missing_secret',
-        env: { enable: '1', secret: '', profile: PROFILE_ID },
+        env: { enable: '1', secret: '', profile: PROFILE_ID, storePath },
         requestBuilder: async () => loadFixture('fixtures/neg/missing_secret.json', localUrl),
       },
       {
         name: 'forbidden_target',
-        env: { enable: '1', secret: 'test_secret_v1', profile: PROFILE_ID },
+        env: { enable: '1', secret: 'test_secret_v1', profile: PROFILE_ID, storePath },
         requestBuilder: async () => loadFixture('fixtures/neg/forbidden_target.json', localUrl),
       },
       {
         name: 'oversize_payload',
-        env: { enable: '1', secret: 'test_secret_v1', profile: PROFILE_ID },
+        env: { enable: '1', secret: 'test_secret_v1', profile: PROFILE_ID, storePath },
         requestBuilder: async () => loadFixture('fixtures/neg/oversize_payload.json', localUrl),
       },
       {
         name: 'deny_non_local_even_with_profile',
-        env: { enable: '1', secret: 'test_secret_v1', profile: PROFILE_ID },
+        env: { enable: '1', secret: 'test_secret_v1', profile: PROFILE_ID, storePath },
         requestBuilder: async () =>
           loadFixture('fixtures/neg/forbidden_target.json', 'https://example.org/hook'),
       },
