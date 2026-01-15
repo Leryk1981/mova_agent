@@ -26,6 +26,19 @@
         "pos_dir": "artifacts/quality/external_call_webhook_v0/pos",
         "neg_dir": "artifacts/quality/external_call_webhook_v0/neg"
       }
+    },
+    {
+      "id": "ocp_delivery_v1",
+      "version": "0.0.1",
+      "manifest": "packs/ocp_delivery_v1/proofkit_manifest_v0.json",
+      "scripts": {
+        "pos": "npm run quality:ocp_delivery_v1",
+        "neg": "npm run quality:ocp_delivery_v1:neg"
+      },
+      "evidence": {
+        "pos_dir": "artifacts/quality/ocp_delivery_v1/pos",
+        "neg_dir": "artifacts/quality/ocp_delivery_v1/neg"
+      }
     }
   ]
 }

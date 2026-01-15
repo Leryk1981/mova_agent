@@ -1,0 +1,27 @@
+{
+  "id": "ocp_delivery_v1",
+  "version": "0.0.1",
+  "claim": "Outbound delivery performs a signed local webhook call, is policy-gated, deterministic, and produces auditable evidence.",
+  "surface": "ocp.delivery.v1",
+  "scripts": {
+    "pos": "npm run quality:ocp_delivery_v1",
+    "neg": "npm run quality:ocp_delivery_v1:neg"
+  },
+  "fixtures": {
+    "pos": ["packs/ocp_delivery_v1/fixtures/pos/local_webhook_send_request.json"],
+    "neg": [
+      "packs/ocp_delivery_v1/fixtures/neg/missing_secret.json",
+      "packs/ocp_delivery_v1/fixtures/neg/forbidden_target.json",
+      "packs/ocp_delivery_v1/fixtures/neg/oversize_payload.json"
+    ]
+  },
+  "evidence": {
+    "pos_base": "artifacts/quality/ocp_delivery_v1/pos",
+    "neg_base": "artifacts/quality/ocp_delivery_v1/neg",
+    "expected_files": ["pos_report.json", "neg_report.json"]
+  },
+  "notes": [
+    "Allowlist: localhost/127.0.0.1 only.",
+    "Requires OCP_ENABLE_REAL_SEND=1 and WEBHOOK_SIGNING_SECRET set."
+  ]
+}

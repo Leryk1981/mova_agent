@@ -1,0 +1,8 @@
+{
+  "policy_profile_id": "ocp_delivery_prod_v0",
+  "allow_real_send": false,
+  "allowed_targets": [],
+  "max_payload_bytes": 1024,
+  "timeout_ms": 5000,
+  "require_hmac": true
+}
