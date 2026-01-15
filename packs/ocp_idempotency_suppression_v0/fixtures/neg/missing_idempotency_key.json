@@ -1,0 +1,6 @@
+{
+  "target_url": "http://127.0.0.1:0/hook",
+  "payload": {
+    "order_id": "idem-missing-key"
+  }
+}
