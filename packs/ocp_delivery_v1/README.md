@@ -4,3 +4,9 @@
 - Fixtures: `fixtures/pos/local_webhook_send_request.json` and negatives (missing secret, forbidden target, oversize payload).
 - Evidence: runs under `artifacts/quality/ocp_delivery_v1/(pos|neg)/<request_id>/runs/<run_id>/`.
 - Scripts: `quality:ocp_delivery_v1`, `quality:ocp_delivery_v1:neg`.
+
+## Staging smoke (opt-in)
+- Sends a real webhook only when env vars are set.
+- Run: `npm run smoke:ocp_delivery:staging`.
+- Required env vars: `OCP_STAGING_WEBHOOK_URL`, `OCP_STAGING_SIGNING_SECRET`.
+- Evidence: `artifacts/smoke/ocp_delivery_staging/<run_id>/smoke_evidence.json`.
