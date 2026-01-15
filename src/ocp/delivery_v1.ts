@@ -1,0 +1,210 @@
+import fs from 'fs-extra';
+import path from 'path';
+import { randomUUID, createHash } from 'crypto';
+import { getDriver } from '../drivers';
+import { EvidenceWriter } from '../evidence/evidence_writer';
+import { getLogger } from '../logging/logger';
+import { PolicyEngine } from '../policy/policy_engine';
+import type {
+  WebhookDeliveryInputV1,
+  WebhookDeliveryOutputV1,
+} from '../drivers/http_webhook_delivery_driver_v1';
+
+const DEFAULT_POLICY_ID = 'ocp_delivery_dev_local_v0';
+
+export interface OcpDeliveryV1Request {
+  target_url: string;
+  payload?: any;
+  metadata?: Record<string, unknown>;
+  request_id?: string;
+}
+
+export interface OcpDeliveryV1Result {
+  result_core: {
+    request_id: string;
+    run_id: string;
+    driver_kind: string;
+    target_url: string;
+    delivered: boolean;
+    status_code?: number;
+    dry_run: false;
+  };
+  evidence: {
+    request_id: string;
+    run_id: string;
+    evidence_dir: string;
+    artifacts: {
+      request: string;
+      result_core: string;
+      evidence: string;
+    };
+  };
+}
+
+function loadPolicyProfile(): { profileId: string; policy: any } {
+  const profileId = process.env.OCP_POLICY_PROFILE_ID || DEFAULT_POLICY_ID;
+  const policyPath = path.resolve(process.cwd(), 'policies', 'ocp_delivery', `${profileId}.json`);
+  if (!fs.existsSync(policyPath)) {
+    throw new Error(`Policy profile not found: ${profileId}`);
+  }
+  return { profileId, policy: fs.readJsonSync(policyPath) };
+}
+
+function hostAllowed(urlString: string, allowed: string[]): boolean {
+  try {
+    const parsed = new URL(urlString);
+    return allowed.some((item) => item === parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function assertValidRequest(
+  request: OcpDeliveryV1Request,
+  policy: any,
+  signingSecret?: string
+): void {
+  if (!request || typeof request !== 'object') {
+    throw new Error('Delivery request must be an object');
+  }
+
+  if (!request.target_url || typeof request.target_url !== 'string') {
+    throw new Error('Delivery target_url is required');
+  }
+
+  if (!hostAllowed(request.target_url, policy.allowed_targets || [])) {
+    throw new Error('Target host not allowlisted by policy');
+  }
+
+  const payloadBytes = Buffer.byteLength(JSON.stringify(request.payload ?? {}), 'utf8');
+  const maxBytes = policy.max_payload_bytes ?? 0;
+  if (maxBytes > 0 && payloadBytes > maxBytes) {
+    throw new Error(`Payload exceeds max size (${maxBytes} bytes)`);
+  }
+
+  if (policy.require_hmac && !signingSecret) {
+    throw new Error('Signing secret is required for webhook delivery');
+  }
+}
+
+export async function runOcpDeliveryV1(
+  request: OcpDeliveryV1Request
+): Promise<OcpDeliveryV1Result> {
+  const logger = getLogger();
+  const signingSecret = process.env.WEBHOOK_SIGNING_SECRET;
+  const { profileId, policy } = loadPolicyProfile();
+  assertValidRequest(request, policy, signingSecret);
+
+  const deliveryPolicy = new PolicyEngine();
+  deliveryPolicy.addRule({
+    id: 'allow-real-send-policy',
+    action: 'allow',
+    priority: 200,
+    condition: (context: any) =>
+      process.env.OCP_ENABLE_REAL_SEND === '1' &&
+      policy.allow_real_send === true &&
+      hostAllowed(context.object_ref, policy.allowed_targets || []),
+    description: 'Policy allow real send with env arming switch',
+  });
+
+  deliveryPolicy.addRule({
+    id: 'deny-not-allowed-host',
+    action: 'deny',
+    priority: 150,
+    condition: (context: any) => !hostAllowed(context.object_ref, policy.allowed_targets || []),
+    description: 'Target not in policy allowlist',
+  });
+
+  deliveryPolicy.addRule({
+    id: 'deny-missing-secret',
+    action: 'deny',
+    priority: 140,
+    condition: (_context: any) => policy.require_hmac && !process.env.WEBHOOK_SIGNING_SECRET,
+    description: 'Signing secret required',
+  });
+
+  const policyDecision = deliveryPolicy.evaluate({
+    subject_ref: 'ocp.delivery',
+    object_ref: request.target_url,
+    verb: 'ocp.delivery.v1',
+    timestamp: new Date(),
+    input: request,
+    metadata: { allow_real_send: policy.allow_real_send === true, policy_profile_id: profileId },
+  });
+
+  if (!policyDecision.allowed) {
+    throw new Error(
+      `Delivery denied by policy: ${policyDecision.reason || 'not allowed'} (${profileId})`
+    );
+  }
+
+  const requestId = request.request_id ?? `req_${randomUUID()}`;
+  const runId = `run_${randomUUID()}`;
+  const evidenceDir = path.join('artifacts', 'ocp_delivery_v1', requestId, 'runs', runId);
+  await fs.ensureDir(evidenceDir);
+
+  const driver = getDriver('http_webhook_delivery_v1');
+  const payload = request.payload ?? {};
+
+  const bodyHash = createHash('sha256').update(JSON.stringify(payload), 'utf8').digest('hex');
+  const targetHost = new URL(request.target_url).hostname;
+
+  const driverInput: WebhookDeliveryInputV1 = {
+    target_url: request.target_url,
+    payload,
+    signing_secret: signingSecret || '',
+    timeout_ms: policy.timeout_ms || 5000,
+  };
+
+  const driverResult = (await driver.execute(driverInput, {
+    driverName: 'http_webhook_delivery_v1',
+  })) as WebhookDeliveryOutputV1;
+
+  const delivered = driverResult.status >= 200 && driverResult.status < 300;
+
+  const resultCore = {
+    request_id: requestId,
+    run_id: runId,
+    driver_kind: 'http_webhook_delivery_v1',
+    target_url: request.target_url,
+    delivered,
+    status_code: driverResult.status,
+    dry_run: false as const,
+  };
+
+  const evidenceWriter = new EvidenceWriter();
+  await evidenceWriter.writeArtifact(evidenceDir, 'request.json', {
+    ...request,
+    target_url: request.target_url,
+    payload,
+    metadata: request.metadata,
+  });
+  await evidenceWriter.writeArtifact(evidenceDir, 'result_core.json', resultCore);
+  await evidenceWriter.writeArtifact(evidenceDir, 'evidence.json', {
+    policy_profile_id: profileId,
+    policy_allowed: policyDecision.allowed,
+    policy_reason: policyDecision.reason,
+    target_host: targetHost,
+    request_body_sha256: bodyHash,
+    response_status: driverResult.status,
+    response_body_sha256: driverResult.response_body_sha256,
+    duration_ms: driverResult.duration_ms,
+    timestamp: new Date().toISOString(),
+  });
+
+  logger.info(`OCP delivery v1 webhook run recorded at ${evidenceDir}`);
+
+  return {
+    result_core: resultCore,
+    evidence: {
+      request_id: requestId,
+      run_id: runId,
+      evidence_dir: evidenceDir,
+      artifacts: {
+        request: path.join(evidenceDir, 'request.json'),
+        result_core: path.join(evidenceDir, 'result_core.json'),
+        evidence: path.join(evidenceDir, 'evidence.json'),
+      },
+    },
+  };
+}

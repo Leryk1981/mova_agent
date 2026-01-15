@@ -1,0 +1,8 @@
+{
+  "policy_profile_id": "ocp_delivery_dev_local_v0",
+  "allow_real_send": true,
+  "allowed_targets": ["127.0.0.1", "localhost"],
+  "max_payload_bytes": 1024,
+  "timeout_ms": 5000,
+  "require_hmac": true
+}

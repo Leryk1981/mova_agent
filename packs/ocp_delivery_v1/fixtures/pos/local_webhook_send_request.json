@@ -1,0 +1,10 @@
+{
+  "target_url": "{{WEBHOOK_URL}}",
+  "payload": {
+    "order_id": "webhook-v1-001",
+    "items": [{ "sku": "sample", "qty": 1 }]
+  },
+  "metadata": {
+    "trace_id": "delivery-v1-proof"
+  }
+}
