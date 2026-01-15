@@ -99,7 +99,9 @@ function assertValidRequest(request: OcpDeliveryRequestV0): void {
   }
 }
 
-export async function runOcpDeliveryV0(request: OcpDeliveryRequestV0): Promise<OcpDeliveryResultV0> {
+export async function runOcpDeliveryV0(
+  request: OcpDeliveryRequestV0
+): Promise<OcpDeliveryResultV0> {
   const logger = getLogger();
   assertValidRequest(request);
 
