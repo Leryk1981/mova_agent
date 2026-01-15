@@ -1,0 +1,11 @@
+{
+  "target": "noop://webhook/local",
+  "payload": {
+    "event": "test",
+    "data": { "id": "noop-001" }
+  },
+  "dry_run": true,
+  "metadata": {
+    "trace_id": "webhook-noop-proof"
+  }
+}

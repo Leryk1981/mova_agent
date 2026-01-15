@@ -13,6 +13,19 @@
         "pos_dir": "artifacts/quality/ocp_delivery_v0/pos",
         "neg_dir": "artifacts/quality/ocp_delivery_v0/neg"
       }
+    },
+    {
+      "id": "external_call_webhook_v0",
+      "version": "0.0.1",
+      "manifest": "packs/external_call_webhook_v0/proofkit_manifest_v0.json",
+      "scripts": {
+        "pos": "npm run quality:external_call_webhook",
+        "neg": "npm run quality:external_call_webhook:neg"
+      },
+      "evidence": {
+        "pos_dir": "artifacts/quality/external_call_webhook_v0/pos",
+        "neg_dir": "artifacts/quality/external_call_webhook_v0/neg"
+      }
     }
   ]
 }

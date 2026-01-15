@@ -1,0 +1,8 @@
+{
+  "target": "https://prod.example.com/webhook",
+  "payload": {
+    "event": "forbidden",
+    "data": { "id": "forbidden" }
+  },
+  "dry_run": true
+}
