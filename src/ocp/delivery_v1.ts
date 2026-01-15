@@ -10,6 +10,7 @@ import type {
   WebhookDeliveryOutputV1,
 } from '../drivers/http_webhook_delivery_driver_v1';
 import { IdempotencyStoreV0, IDEMPOTENCY_ERRORS } from './idempotency_store_v0';
+import { runWithRetry, RetryAttemptLog } from './retry_backoff_v0';
 
 const DEFAULT_POLICY_ID = 'ocp_delivery_dev_local_v0';
 
@@ -155,6 +156,8 @@ export async function runOcpDeliveryV1(
   const idemKey = request.idempotency_key;
   const requireIdem = process.env.OCP_REQUIRE_IDEMPOTENCY === '1';
   const suppressionEnabled = idemKey && idemKey.length > 0;
+  const attempts: RetryAttemptLog[] = [];
+  let outcomeCode = 'DELIVERED';
 
   if (suppressionEnabled) {
     const existing = idemStore.get(idemKey as string);
@@ -187,6 +190,9 @@ export async function runOcpDeliveryV1(
           suppressed: true,
           original_evidence_path: existing.first_evidence_path,
           timestamp: new Date().toISOString(),
+          attempts: [],
+          attempts_total: 0,
+          outcome_code: 'SUPPRESSED_DUPLICATE',
         });
 
         return {
@@ -219,11 +225,46 @@ export async function runOcpDeliveryV1(
     timeout_ms: policy.timeout_ms || 5000,
   };
 
-  const driverResult = (await driver.execute(driverInput, {
-    driverName: 'http_webhook_delivery_v1',
-  })) as WebhookDeliveryOutputV1;
+  let driverResult: WebhookDeliveryOutputV1 | undefined;
+  if (policy.retry_enabled) {
+    const retryOutcome = await runWithRetry(
+      () =>
+        driver.execute(driverInput, {
+          driverName: 'http_webhook_delivery_v1',
+        }) as Promise<WebhookDeliveryOutputV1>,
+      {
+        retry_enabled: policy.retry_enabled,
+        max_attempts: policy.max_attempts,
+        retry_on_status: policy.retry_on_status,
+        base_backoff_ms: policy.base_backoff_ms,
+        max_backoff_ms: policy.max_backoff_ms,
+      }
+    );
+    attempts.push(...retryOutcome.attempts);
+    outcomeCode = retryOutcome.outcome_code;
+    driverResult = retryOutcome.result;
+  } else {
+    driverResult = (await driver.execute(driverInput, {
+      driverName: 'http_webhook_delivery_v1',
+    })) as WebhookDeliveryOutputV1;
+    const deliveredSingle =
+      typeof driverResult.status === 'number' &&
+      driverResult.status >= 200 &&
+      driverResult.status < 300;
+    attempts.push({
+      attempt: 1,
+      status: deliveredSingle ? 'DELIVERED' : 'NON_RETRYABLE_FAIL',
+      http_status: driverResult.status,
+      planned_backoff_ms: 0,
+    });
+    outcomeCode = deliveredSingle ? 'DELIVERED' : 'NON_RETRYABLE_HTTP_STATUS';
+  }
 
-  const delivered = driverResult.status >= 200 && driverResult.status < 300;
+  const delivered =
+    driverResult !== undefined &&
+    typeof driverResult.status === 'number' &&
+    driverResult.status >= 200 &&
+    driverResult.status < 300;
 
   const resultCore = {
     request_id: requestId,
@@ -231,7 +272,7 @@ export async function runOcpDeliveryV1(
     driver_kind: 'http_webhook_delivery_v1',
     target_url: request.target_url,
     delivered,
-    status_code: driverResult.status,
+    status_code: driverResult?.status,
     dry_run: false as const,
   };
 
@@ -248,11 +289,14 @@ export async function runOcpDeliveryV1(
     policy_reason: policyDecision.reason,
     target_host: targetHost,
     request_body_sha256: bodyHash,
-    response_status: driverResult.status,
-    response_body_sha256: driverResult.response_body_sha256,
-    duration_ms: driverResult.duration_ms,
+    response_status: driverResult?.status,
+    response_body_sha256: driverResult?.response_body_sha256,
+    duration_ms: driverResult?.duration_ms,
     timestamp: new Date().toISOString(),
     suppressed: false,
+    attempts,
+    attempts_total: attempts.length,
+    outcome_code: outcomeCode,
   });
 
   // Record idempotency entry for future suppression

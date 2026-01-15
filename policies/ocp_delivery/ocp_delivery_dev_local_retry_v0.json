@@ -1,0 +1,13 @@
+{
+  "policy_profile_id": "ocp_delivery_dev_local_retry_v0",
+  "allow_real_send": true,
+  "allowed_targets": ["127.0.0.1", "localhost"],
+  "max_payload_bytes": 1024,
+  "timeout_ms": 3000,
+  "require_hmac": true,
+  "retry_enabled": true,
+  "max_attempts": 3,
+  "retry_on_status": [408, 429, 500, 502, 503, 504],
+  "base_backoff_ms": 0,
+  "max_backoff_ms": 0
+}
