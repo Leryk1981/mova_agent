@@ -1,0 +1,13 @@
+{
+  "target": "noop://delivery/local",
+  "payload": {
+    "package_id": "demo-noop-001",
+    "items": [
+      { "sku": "sample", "qty": 1 }
+    ]
+  },
+  "dry_run": true,
+  "metadata": {
+    "trace_id": "noop-proof"
+  }
+}
