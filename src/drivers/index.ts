@@ -6,6 +6,7 @@ import {
   restrictedShellDriverFactory,
 } from '@leryk1981/mova-executors';
 import { noopDeliveryDriverV0Factory } from './noop_delivery_driver_v0';
+import { noopWebhookDriverV0Factory } from './noop_webhook_driver_v0';
 
 const driverFactories = new Map<string, DriverFactory>();
 
@@ -35,6 +36,7 @@ registerDriver('noop', () => ({
 registerDriver('http', httpDriverFactory);
 registerDriver('restricted_shell', restrictedShellDriverFactory);
 registerDriver('noop_delivery_v0', noopDeliveryDriverV0Factory);
+registerDriver('noop_webhook_v0', noopWebhookDriverV0Factory);
 
 export {
   Driver,
@@ -43,4 +45,5 @@ export {
   httpDriverFactory,
   restrictedShellDriverFactory,
   noopDeliveryDriverV0Factory,
+  noopWebhookDriverV0Factory,
 };
