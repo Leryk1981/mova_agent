@@ -21,6 +21,8 @@
     "quality:neg": "ts-node scripts/legacy/quality_neg.ts",
     "quality:ocp_delivery": "npm run build && node tools/quality_ocp_delivery_v0.mjs",
     "quality:ocp_delivery:neg": "npm run build && node tools/quality_ocp_delivery_v0_neg.mjs",
+    "proofkit:run": "node tools/proofkit_run_v0.mjs",
+    "proofkit:all": "node tools/proofkit_run_v0.mjs --all",
     "dev": "nodemon --exec ts-node tools/mova-agent.ts",
     "start": "node build/tools/mova-agent.js",
     "prepublishOnly": "npm run build",

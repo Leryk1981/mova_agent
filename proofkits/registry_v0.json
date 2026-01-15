@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "proofkits": [
+    {
+      "id": "ocp_delivery_v0",
+      "version": "0.0.1",
+      "manifest": "packs/ocp_delivery_v0/proofkit_manifest_v0.json",
+      "scripts": {
+        "pos": "npm run quality:ocp_delivery",
+        "neg": "npm run quality:ocp_delivery:neg"
+      },
+      "evidence": {
+        "pos_dir": "artifacts/quality/ocp_delivery_v0/pos",
+        "neg_dir": "artifacts/quality/ocp_delivery_v0/neg"
+      }
+    }
+  ]
+}
