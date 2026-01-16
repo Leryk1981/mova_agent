@@ -1,0 +1,11 @@
+name = "mova-tool-door-v0-dev"
+main = "src/index.ts"
+compatibility_date = "2026-01-16"
+
+[[d1_databases]]
+binding = "TOOL_DOOR_DB" # i.e. access this D1 Database via env.TOOL_DOOR_DB
+database_name = "mova-tool-door-v0-db"
+database_id = "" # Will be filled in when deployed
+
+[vars]
+TOOL_DOOR_POLICY_PATH = "policies/tool_door/policy_profiles_v0.json"

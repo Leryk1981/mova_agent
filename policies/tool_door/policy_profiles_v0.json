@@ -1,0 +1,30 @@
+{
+  "dev_local_v0": {
+    "allow_verbs": ["deliver", "external_call"],
+    "allowed_hosts": ["127.0.0.1", "localhost"],
+    "auth_required": true,
+    "throttle": {
+      "enabled": true,
+      "cooldown_ms": 60000,
+      "strict": false
+    },
+    "retry": {
+      "max_attempts": 2,
+      "backoff_ms": [200, 800]
+    }
+  },
+  "prod_v0": {
+    "allow_verbs": ["deliver", "external_call"],
+    "allowed_hosts": [],
+    "auth_required": true,
+    "throttle": {
+      "enabled": true,
+      "cooldown_ms": 60000,
+      "strict": true
+    },
+    "retry": {
+      "max_attempts": 3,
+      "backoff_ms": [300, 1200, 3000]
+    }
+  }
+}
