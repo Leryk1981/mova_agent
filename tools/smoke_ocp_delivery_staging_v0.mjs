@@ -9,6 +9,32 @@ const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
 
 const { runOcpDeliveryV1 } = require('../build/src/ocp/delivery_v1.js');
+const SENSITIVE_KEYS = ['token', 'secret', 'key', 'auth', 'password', 'authorization'];
+
+function maskString(value) {
+  const hash = createHash('sha256').update(String(value), 'utf8').digest('hex').slice(0, 12);
+  return `***REDACTED:${hash}***`;
+}
+
+function redactValue(value, keyHint) {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map((v) => redactValue(v));
+  if (typeof value === 'object') {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) {
+      out[k] = redactValue(v, k);
+    }
+    return out;
+  }
+  if (typeof value === 'string') {
+    const lowerKey = (keyHint || '').toLowerCase();
+    const lowerVal = value.toLowerCase();
+    if (SENSITIVE_KEYS.some((m) => lowerKey.includes(m) || lowerVal.includes(m))) {
+      return maskString(value);
+    }
+  }
+  return value;
+}
 
 function buildEvidencePath(runId) {
   return path.join('artifacts', 'smoke', 'ocp_delivery_staging', runId, 'smoke_evidence.json');
@@ -17,7 +43,7 @@ function buildEvidencePath(runId) {
 async function writeEvidence(runId, data) {
   const evidencePath = buildEvidencePath(runId);
   await fs.ensureDir(path.dirname(evidencePath));
-  await fs.writeJson(evidencePath, { run_id: runId, ...data }, { spaces: 2 });
+  await fs.writeJson(evidencePath, redactValue({ run_id: runId, ...data }), { spaces: 2 });
   return evidencePath;
 }
 

@@ -1,9 +1,41 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createHash } from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const SENSITIVE_KEYS = ['token', 'secret', 'key', 'auth', 'password', 'authorization'];
+
+function maskString(value) {
+  const hash = createHash('sha256').update(String(value), 'utf8').digest('hex').slice(0, 12);
+  return `***REDACTED:${hash}***`;
+}
+
+function redactValue(value, keyHint) {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map((v) => redactValue(v));
+  if (typeof value === 'object') {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) {
+      out[k] = redactValue(v, k);
+    }
+    return out;
+  }
+  if (typeof value === 'string') {
+    const lowerKey = (keyHint || '').toLowerCase();
+    const lowerVal = value.toLowerCase();
+    if (SENSITIVE_KEYS.some((m) => lowerKey.includes(m) || lowerVal.includes(m))) {
+      return maskString(value);
+    }
+  }
+  return value;
+}
+
+function redactReport(report) {
+  return redactValue(report);
+}
 
 function envPresence(name) {
   const v = process.env[name];
@@ -36,7 +68,7 @@ async function writeReport(report) {
   const runId = `run_${Date.now()}`;
   const reportPath = path.join('artifacts', 'doctor', 'ocp_delivery', runId, 'doctor_report.json');
   await fs.ensureDir(path.dirname(reportPath));
-  await fs.writeJson(reportPath, { run_id: runId, ...report }, { spaces: 2 });
+  await fs.writeJson(reportPath, redactReport({ run_id: runId, ...report }), { spaces: 2 });
   return reportPath;
 }
 
