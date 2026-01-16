@@ -29,6 +29,8 @@
     "quality:ocp_idempotency_suppression:neg": "npm run build && node tools/quality_ocp_idempotency_suppression_v0_neg.mjs",
     "quality:ocp_retry_backoff": "npm run build && node tools/quality_ocp_retry_backoff_v0.mjs",
     "quality:ocp_retry_backoff:neg": "npm run build && node tools/quality_ocp_retry_backoff_v0_neg.mjs",
+    "quality:ocp_rate_limit_throttle": "npm run build && node tools/quality_ocp_rate_limit_throttle_v0.mjs",
+    "quality:ocp_rate_limit_throttle:neg": "npm run build && node tools/quality_ocp_rate_limit_throttle_v0_neg.mjs",
     "quality:ocp_evidence_hygiene": "node tools/quality_ocp_evidence_hygiene_v0.mjs",
     "quality:ocp_evidence_hygiene:neg": "node tools/quality_ocp_evidence_hygiene_v0_neg.mjs",
     "smoke:ocp_delivery:staging": "node tools/smoke_ocp_delivery_staging_v0.mjs",

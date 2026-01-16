@@ -11,6 +11,8 @@ import type {
 } from '../drivers/http_webhook_delivery_driver_v1';
 import { IdempotencyStoreV0, IDEMPOTENCY_ERRORS } from './idempotency_store_v0';
 import { runWithRetry, RetryAttemptLog } from './retry_backoff_v0';
+import { RateLimitStoreV0 } from './rate_limit_store_v0';
+import { evaluateRateLimit } from './rate_limit_v0';
 
 const DEFAULT_POLICY_ID = 'ocp_delivery_dev_local_v0';
 
@@ -29,7 +31,7 @@ export interface OcpDeliveryV1Result {
     driver_kind: string;
     target_url: string;
     delivered: boolean;
-    status_code?: number;
+    status_code?: number | string;
     dry_run: false;
   };
   evidence: {
@@ -88,6 +90,16 @@ function assertValidRequest(
   if (policy.require_hmac && !signingSecret) {
     throw new Error('Signing secret is required for webhook delivery');
   }
+}
+
+function buildRateLimitKey(targetUrl: string, driverId?: string): string {
+  const parsed = new URL(targetUrl);
+  const base = `${parsed.host}${parsed.pathname}`;
+  const normalizedDriver = typeof driverId === 'string' ? driverId.trim() : '';
+  if (normalizedDriver.length > 0) {
+    return `${base}|${normalizedDriver}`;
+  }
+  return base;
 }
 
 export async function runOcpDeliveryV1(
@@ -158,6 +170,18 @@ export async function runOcpDeliveryV1(
   const suppressionEnabled = idemKey && idemKey.length > 0;
   const attempts: RetryAttemptLog[] = [];
   let outcomeCode = 'DELIVERED';
+  let rateLimitEvidence:
+    | {
+        enabled: boolean;
+        cooldown_ms: number;
+        strict: boolean;
+        key: string;
+        last_sent_ms: number | null;
+        now_ms: number;
+        remaining_ms: number;
+        allowed: boolean;
+      }
+    | undefined;
 
   if (suppressionEnabled) {
     const existing = idemStore.get(idemKey as string);
@@ -214,6 +238,152 @@ export async function runOcpDeliveryV1(
     }
   } else if (requireIdem) {
     throw new Error(IDEMPOTENCY_ERRORS.MISSING_IDEMPOTENCY_KEY);
+  }
+
+  const rateLimitPolicy = policy.rate_limit ?? {};
+  const rateLimitEnabled = rateLimitPolicy.enabled === true;
+  if (rateLimitEnabled) {
+    const cooldownMs =
+      typeof rateLimitPolicy.cooldown_ms === 'number' ? rateLimitPolicy.cooldown_ms : 0;
+    const strict =
+      process.env.OCP_RATE_LIMIT_STRICT_OVERRIDE === '1' ? true : rateLimitPolicy.strict === true;
+    const rateLimitKey = buildRateLimitKey(
+      request.target_url,
+      (request.metadata as any)?.driver_id as string | undefined
+    );
+    const nowMs = Date.now();
+    const storePath = process.env.OCP_RATE_LIMIT_STORE_PATH;
+
+    if (!storePath) {
+      rateLimitEvidence = {
+        enabled: true,
+        cooldown_ms: cooldownMs,
+        strict,
+        key: rateLimitKey,
+        last_sent_ms: null,
+        now_ms: nowMs,
+        remaining_ms: 0,
+        allowed: !strict,
+      };
+
+      if (strict) {
+        const resultCore = {
+          request_id: requestId,
+          run_id: runId,
+          driver_kind: 'http_webhook_delivery_v1',
+          target_url: request.target_url,
+          delivered: false,
+          status_code: 'RATE_LIMIT_STORE_MISSING',
+          dry_run: false as const,
+        };
+
+        await evidenceWriter.writeArtifact(evidenceDir, 'request.json', {
+          ...request,
+          target_url: request.target_url,
+          payload,
+          metadata: request.metadata,
+        });
+        await evidenceWriter.writeArtifact(evidenceDir, 'result_core.json', resultCore);
+        await evidenceWriter.writeArtifact(evidenceDir, 'evidence.json', {
+          policy_profile_id: profileId,
+          policy_allowed: policyDecision.allowed,
+          policy_reason: policyDecision.reason,
+          target_host: targetHost,
+          request_body_sha256: bodyHash,
+          timestamp: new Date().toISOString(),
+          suppressed: false,
+          attempts: [],
+          attempts_total: 0,
+          outcome_code: 'RATE_LIMIT_STORE_MISSING',
+          rate_limit: rateLimitEvidence,
+        });
+
+        return {
+          result_core: resultCore,
+          evidence: {
+            request_id: requestId,
+            run_id: runId,
+            evidence_dir: evidenceDir,
+            artifacts: {
+              request: path.join(evidenceDir, 'request.json'),
+              result_core: path.join(evidenceDir, 'result_core.json'),
+              evidence: path.join(evidenceDir, 'evidence.json'),
+            },
+          },
+        };
+      }
+
+      logger.info('WARN: OCP rate limit store path missing, throttle bypassed');
+    } else {
+      const store = new RateLimitStoreV0(storePath);
+      const lastSent = store.getLastSent(rateLimitKey);
+      const decision = evaluateRateLimit({
+        key: rateLimitKey,
+        now_ms: nowMs,
+        cooldown_ms: cooldownMs,
+        last_sent_ms: lastSent,
+      });
+      rateLimitEvidence = {
+        enabled: true,
+        cooldown_ms: cooldownMs,
+        strict,
+        key: rateLimitKey,
+        last_sent_ms: lastSent,
+        now_ms: nowMs,
+        remaining_ms: decision.remaining_ms,
+        allowed: decision.allowed,
+      };
+
+      if (!decision.allowed) {
+        const throttledOutcome = strict ? 'THROTTLED_STRICT' : 'THROTTLED';
+        const resultCore = {
+          request_id: requestId,
+          run_id: runId,
+          driver_kind: 'http_webhook_delivery_v1',
+          target_url: request.target_url,
+          delivered: false,
+          status_code: throttledOutcome,
+          dry_run: false as const,
+        };
+
+        await evidenceWriter.writeArtifact(evidenceDir, 'request.json', {
+          ...request,
+          target_url: request.target_url,
+          payload,
+          metadata: request.metadata,
+        });
+        await evidenceWriter.writeArtifact(evidenceDir, 'result_core.json', resultCore);
+        await evidenceWriter.writeArtifact(evidenceDir, 'evidence.json', {
+          policy_profile_id: profileId,
+          policy_allowed: policyDecision.allowed,
+          policy_reason: policyDecision.reason,
+          target_host: targetHost,
+          request_body_sha256: bodyHash,
+          timestamp: new Date().toISOString(),
+          suppressed: false,
+          attempts: [],
+          attempts_total: 0,
+          outcome_code: throttledOutcome,
+          rate_limit: rateLimitEvidence,
+        });
+
+        return {
+          result_core: resultCore,
+          evidence: {
+            request_id: requestId,
+            run_id: runId,
+            evidence_dir: evidenceDir,
+            artifacts: {
+              request: path.join(evidenceDir, 'request.json'),
+              result_core: path.join(evidenceDir, 'result_core.json'),
+              evidence: path.join(evidenceDir, 'evidence.json'),
+            },
+          },
+        };
+      }
+
+      store.setLastSent(rateLimitKey, nowMs);
+    }
   }
 
   const driver = getDriver('http_webhook_delivery_v1');
@@ -297,6 +467,7 @@ export async function runOcpDeliveryV1(
     attempts,
     attempts_total: attempts.length,
     outcome_code: outcomeCode,
+    rate_limit: rateLimitEvidence,
   });
 
   // Record idempotency entry for future suppression

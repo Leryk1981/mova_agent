@@ -1,0 +1,10 @@
+{
+  "target_url": "{{WEBHOOK_URL}}",
+  "payload": {
+    "event": "rate_limit_soft",
+    "sequence": 1
+  },
+  "metadata": {
+    "trace_id": "rate_limit_soft_001"
+  }
+}
