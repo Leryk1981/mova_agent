@@ -14,7 +14,8 @@
     "neg": [
       "packs/ocp_delivery_v0/fixtures/neg/forbidden_target.json",
       "packs/ocp_delivery_v0/fixtures/neg/oversize_payload.json",
-      "packs/ocp_delivery_v0/fixtures/neg/missing_target.json"
+      "packs/ocp_delivery_v0/fixtures/neg/missing_target.json",
+      "packs/ocp_delivery_v0/fixtures/neg/secret_leak.json"
     ]
   },
   "evidence": {

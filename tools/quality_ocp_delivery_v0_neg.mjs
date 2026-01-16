@@ -17,7 +17,22 @@ async function loadFixture(relativePath) {
 async function runScenario(name, request, envFlag) {
   process.env.ALLOW_NOOP_ONLY = envFlag;
   try {
-    await runOcpDeliveryV0(request);
+    const result = await runOcpDeliveryV0(request);
+    if (name === 'secret_leak') {
+      const evidenceDir = result.evidence.evidence_dir;
+      const files = await fs.readdir(evidenceDir);
+      const content = await Promise.all(
+        files.map((f) => fs.readFile(path.join(evidenceDir, f), 'utf8'))
+      );
+      const blob = content.join('\n');
+      const secretMarkers = ['VERY_SECRET_TOKEN_123', 'SHOULD_NOT_LEAK', 'Bearer SECRET123'];
+      const leaked = secretMarkers.some((s) => blob.includes(s));
+      return {
+        name,
+        passed: !leaked,
+        error: leaked ? 'secret found in artifacts' : 'secrets redacted',
+      };
+    }
     return { name, passed: false, error: 'expected failure but delivery succeeded' };
   } catch (error) {
     return { name, passed: true, error: error.message };
@@ -44,6 +59,11 @@ async function main() {
     {
       name: 'missing_target',
       request: await loadFixture('fixtures/neg/missing_target.json'),
+      flag: 'true',
+    },
+    {
+      name: 'secret_leak',
+      request: await loadFixture('fixtures/neg/secret_leak.json'),
       flag: 'true',
     },
   ];
