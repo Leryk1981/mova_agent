@@ -41,7 +41,10 @@
     "dev": "nodemon --exec ts-node tools/mova-agent.ts",
     "start": "node build/tools/mova-agent.js",
     "prepublishOnly": "npm run build",
-    "release:version": "npm version patch"
+    "release:version": "npm version patch",
+    "cf:tool_door:dev": "wrangler dev cf/tool_door_v0/src/index.ts --config cf/tool_door_v0/wrangler.toml",
+    "cf:tool_door:deploy:dev": "wrangler deploy --config cf/tool_door_v0/wrangler.toml",
+    "smoke:tool_door:dev": "node tools/smoke_tool_door_v0.mjs"
   },
   "keywords": [
     "mova",

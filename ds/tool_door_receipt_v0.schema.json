@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "MOVA Tool Door Receipt v0",
+  "description": "Universal receipt for tool door responses",
+  "required": ["ok", "outcome_code", "evidence_ref", "policy_trail_ref", "result_core_hash"],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "description": "Indicates if the operation was successful"
+    },
+    "outcome_code": {
+      "type": "string",
+      "description": "Specific outcome code",
+      "enum": [
+        "DELIVERED",
+        "EXTERNAL_CALL_OK",
+        "DUPLICATE_SUPPRESSED",
+        "THROTTLED",
+        "POLICY_DENIED",
+        "BAD_REQUEST",
+        "UNAUTHORIZED",
+        "RETRY_EXHAUSTED",
+        "INTERNAL_ERROR"
+      ]
+    },
+    "evidence_ref": {
+      "type": "string",
+      "description": "Reference to the evidence record",
+      "minLength": 1
+    },
+    "policy_trail_ref": {
+      "type": "string",
+      "description": "Reference to the policy trail record",
+      "minLength": 1
+    },
+    "result_core_hash": {
+      "type": "string",
+      "description": "Hash of the result core",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

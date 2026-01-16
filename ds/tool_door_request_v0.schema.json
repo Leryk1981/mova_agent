@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "MOVA Tool Door Request v0",
+  "description": "Universal MOVA envelope for tool door requests",
+  "required": ["policy_profile_id", "request"],
+  "properties": {
+    "policy_profile_id": {
+      "type": "string",
+      "description": "Identifier for the policy profile to use",
+      "minLength": 1
+    },
+    "env_ref": {
+      "type": "string",
+      "description": "Optional environment reference"
+    },
+    "request": {
+      "type": "object",
+      "description": "Free-form request object",
+      "additionalProperties": true
+    },
+    "context": {
+      "type": "object",
+      "description": "Contextual information for the request",
+      "additionalProperties": true
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Optional idempotency key to prevent duplicate processing",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}
