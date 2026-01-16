@@ -8,6 +8,7 @@ const allowedRoots = new Set([
   'tests',
   'docs',
   'configs',
+  'cf',
   'tools',
   'sdk-cli',
   'vendor',
