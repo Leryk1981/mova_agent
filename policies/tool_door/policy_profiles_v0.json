@@ -1,7 +1,13 @@
 {
   "dev_local_v0": {
-    "allow_verbs": ["deliver", "external_call"],
-    "allowed_hosts": ["127.0.0.1", "localhost"],
+    "allow_verbs": [
+      "deliver",
+      "external_call"
+    ],
+    "allowed_hosts": [
+      "127.0.0.1",
+      "localhost"
+    ],
     "auth_required": true,
     "throttle": {
       "enabled": true,
@@ -10,12 +16,20 @@
     },
     "retry": {
       "max_attempts": 2,
-      "backoff_ms": [200, 800]
+      "backoff_ms": [
+        200,
+        800
+      ]
     }
   },
   "prod_v0": {
-    "allow_verbs": ["deliver", "external_call"],
-    "allowed_hosts": [],
+    "allow_verbs": [
+      "deliver",
+      "external_call"
+    ],
+    "allowed_hosts": [
+      "webhook.site"
+    ],
     "auth_required": true,
     "throttle": {
       "enabled": true,
@@ -24,7 +38,41 @@
     },
     "retry": {
       "max_attempts": 3,
-      "backoff_ms": [300, 1200, 3000]
+      "backoff_ms": [
+        300,
+        1200,
+        3000
+      ]
     }
+  },
+  "dev_remote_v0": {
+    "allow_verbs": [
+      "deliver",
+      "external_call"
+    ],
+    "allowed_hosts": [
+      "webhook.site"
+    ],
+    "auth_required": true,
+    "throttle": {
+      "enabled": true,
+      "cooldown_ms": 60000,
+      "strict": false
+    },
+    "retry": {
+      "max_attempts": 2,
+      "backoff_ms": [
+        200,
+        800
+      ]
+    },
+    "enabled": true,
+    "allow_hosts": [
+      "webhook.site"
+    ],
+    "allowed_verbs": [
+      "deliver",
+      "external_call"
+    ]
   }
 }
