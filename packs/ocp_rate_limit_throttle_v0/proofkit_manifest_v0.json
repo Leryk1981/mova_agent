@@ -1,0 +1,26 @@
+{
+  "id": "ocp_rate_limit_throttle_v0",
+  "version": "0.0.1",
+  "claim": "Outbound delivery throttles deterministically based on cooldown and policy gating.",
+  "surface": "ocp.delivery.v1",
+  "scripts": {
+    "pos": "npm run quality:ocp_rate_limit_throttle",
+    "neg": "npm run quality:ocp_rate_limit_throttle:neg"
+  },
+  "fixtures": {
+    "pos": [
+      "packs/ocp_rate_limit_throttle_v0/fixtures/pos/two_sends_soft_throttle.json"
+    ],
+    "neg": [
+      "packs/ocp_rate_limit_throttle_v0/fixtures/neg/two_sends_strict_throttle.json"
+    ]
+  },
+  "evidence": {
+    "pos_base": "artifacts/quality/ocp_rate_limit_throttle_v0/pos",
+    "neg_base": "artifacts/quality/ocp_rate_limit_throttle_v0/neg",
+    "expected_files": [
+      "pos_report.json",
+      "neg_report.json"
+    ]
+  }
+}

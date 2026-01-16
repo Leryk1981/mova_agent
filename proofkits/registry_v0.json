@@ -67,6 +67,19 @@
       }
     },
     {
+      "id": "ocp_rate_limit_throttle_v0",
+      "version": "0.0.1",
+      "manifest": "packs/ocp_rate_limit_throttle_v0/proofkit_manifest_v0.json",
+      "scripts": {
+        "pos": "npm run quality:ocp_rate_limit_throttle",
+        "neg": "npm run quality:ocp_rate_limit_throttle:neg"
+      },
+      "evidence": {
+        "pos_dir": "artifacts/quality/ocp_rate_limit_throttle_v0/pos",
+        "neg_dir": "artifacts/quality/ocp_rate_limit_throttle_v0/neg"
+      }
+    },
+    {
       "id": "ocp_evidence_hygiene_v0",
       "version": "0.0.1",
       "manifest": "packs/ocp_evidence_hygiene_v0/proofkit_manifest_v0.json",
