@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
 
 const { runOcpDeliveryV1 } = require('../build/src/ocp/delivery_v1.js');
+const { redactObject } = require('../build/src/evidence/redact_v0.js');
 
 function startMockServer() {
   const server = http.createServer((_req, res) => {
@@ -96,12 +97,17 @@ async function main() {
     );
     await fs.ensureDir(reportDir);
 
-    const report = {
+    const report = redactObject({
       status: allPassed ? 'passed' : 'failed',
       request_id: requestId,
       run_id: runId,
       scenarios: results,
-    };
+      env: {
+        WEBHOOK_SIGNING_SECRET: process.env.WEBHOOK_SIGNING_SECRET
+          ? `len=${process.env.WEBHOOK_SIGNING_SECRET.length}`
+          : 'missing',
+      },
+    });
 
     await fs.writeJson(path.join(reportDir, 'neg_report.json'), report, { spaces: 2 });
 

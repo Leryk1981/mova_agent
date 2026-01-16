@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
 
 const { runOcpDeliveryV1 } = require('../build/src/ocp/delivery_v1.js');
+const { redactObject } = require('../build/src/evidence/redact_v0.js');
 
 const PROFILE_ID = 'ocp_delivery_dev_local_v0';
 
@@ -104,13 +105,19 @@ async function main() {
     );
     await fs.ensureDir(reportDir);
 
-    const report = {
+    const report = redactObject({
       status: allPassed ? 'passed' : 'failed',
       request_id: requestId,
       run_id: runId,
       scenarios: results,
       policy_profile_id: PROFILE_ID,
-    };
+      env: {
+        OCP_ENABLE_REAL_SEND: process.env.OCP_ENABLE_REAL_SEND ? 'set' : 'missing',
+        WEBHOOK_SIGNING_SECRET: process.env.WEBHOOK_SIGNING_SECRET
+          ? `len=${process.env.WEBHOOK_SIGNING_SECRET.length}`
+          : 'missing',
+      },
+    });
 
     await fs.writeJson(path.join(reportDir, 'neg_report.json'), report, { spaces: 2 });
 

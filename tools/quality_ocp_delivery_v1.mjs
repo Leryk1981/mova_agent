@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
 
 const { runOcpDeliveryV1 } = require('../build/src/ocp/delivery_v1.js');
+const { redactObject } = require('../build/src/evidence/redact_v0.js');
 
 const SECRET = 'test_secret_v1';
 const PROFILE_ID = 'ocp_delivery_dev_local_v0';
@@ -88,7 +89,7 @@ async function main() {
     );
     await fs.ensureDir(reportDir);
 
-    const report = {
+    const report = redactObject({
       status: 'passed',
       request_id: result.evidence.request_id,
       run_id: result.evidence.run_id,
@@ -96,7 +97,13 @@ async function main() {
       result_core: result.result_core,
       evidence: result.evidence,
       policy_profile_id: PROFILE_ID,
-    };
+      env: {
+        OCP_ENABLE_REAL_SEND: process.env.OCP_ENABLE_REAL_SEND ? 'set' : 'missing',
+        WEBHOOK_SIGNING_SECRET: process.env.WEBHOOK_SIGNING_SECRET
+          ? `len=${process.env.WEBHOOK_SIGNING_SECRET.length}`
+          : 'missing',
+      },
+    });
 
     await fs.writeJson(path.join(reportDir, 'pos_report.json'), report, { spaces: 2 });
     await fs.writeFile(

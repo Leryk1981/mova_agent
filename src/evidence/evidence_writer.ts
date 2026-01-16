@@ -1,6 +1,6 @@
 ﻿import fs from 'fs-extra';
 import path from 'path';
-import { redactForEvidence } from './redact_v0';
+import { redactObject } from './redact_v0';
 
 class EvidenceWriter {
   async createRunDirectory(requestId: string, runId: string): Promise<string> {
@@ -15,7 +15,7 @@ class EvidenceWriter {
 
   async writeArtifact(evidenceDir: string, filename: string, data: any): Promise<void> {
     try {
-      const sanitizedData = redactForEvidence(data);
+      const sanitizedData = redactObject(data);
       const filePath = path.join(evidenceDir, filename);
       await fs.ensureDir(path.dirname(filePath));
       await fs.writeJson(filePath, sanitizedData, { spaces: 2 });

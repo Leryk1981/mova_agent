@@ -1,0 +1,21 @@
+{
+  "proofkit_id": "ocp_evidence_hygiene_v0",
+  "version": "0.0.1",
+  "claim": "Evidence redaction and secret hygiene for OCP delivery artifacts",
+  "scripts": {
+    "pos": "npm run quality:ocp_evidence_hygiene",
+    "neg": "npm run quality:ocp_evidence_hygiene:neg"
+  },
+  "fixtures": {
+    "pos": [
+      "packs/ocp_evidence_hygiene_v0/fixtures/pos/basic_run.json"
+    ],
+    "neg": [
+      "packs/ocp_evidence_hygiene_v0/fixtures/neg/secrets_in_input.json"
+    ]
+  },
+  "evidence": {
+    "pos_base": "artifacts/quality/ocp_evidence_hygiene_v0/pos",
+    "neg_base": "artifacts/quality/ocp_evidence_hygiene_v0/neg"
+  }
+}
