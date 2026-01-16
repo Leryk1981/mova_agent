@@ -243,11 +243,10 @@ export async function runOcpDeliveryV1(
   const rateLimitPolicy = policy.rate_limit ?? {};
   const rateLimitEnabled = rateLimitPolicy.enabled === true;
   if (rateLimitEnabled) {
-    const cooldownMs = typeof rateLimitPolicy.cooldown_ms === 'number' ? rateLimitPolicy.cooldown_ms : 0;
+    const cooldownMs =
+      typeof rateLimitPolicy.cooldown_ms === 'number' ? rateLimitPolicy.cooldown_ms : 0;
     const strict =
-      process.env.OCP_RATE_LIMIT_STRICT_OVERRIDE === '1'
-        ? true
-        : rateLimitPolicy.strict === true;
+      process.env.OCP_RATE_LIMIT_STRICT_OVERRIDE === '1' ? true : rateLimitPolicy.strict === true;
     const rateLimitKey = buildRateLimitKey(
       request.target_url,
       (request.metadata as any)?.driver_id as string | undefined
