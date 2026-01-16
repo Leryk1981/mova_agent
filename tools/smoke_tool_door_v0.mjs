@@ -37,9 +37,9 @@ if (!toolDoorUrl || !toolDoorToken || !testWebhookUrl) {
 
 try {
   console.log('Starting smoke test for MOVA Tool Door v0...');
-  
+
   // Prepare the request payload for deliver verb
-  const payload = {
+  const basePayload = {
     policy_profile_id: 'dev_local_v0',
     request: {
       target_url: testWebhookUrl,
@@ -51,43 +51,81 @@ try {
     context: {
       test_id: 'smoke-test-deliver-' + Date.now(),
       timestamp: new Date().toISOString()
-    },
-    idempotency_key: 'smoke-test-' + Date.now()
+    }
   };
-  
-  // Make the request to the tool door
-  const response = await fetch(`${toolDoorUrl}/tool/deliver`, {
+
+  // First request with idempotency key A
+  const payloadA = {
+    ...basePayload,
+    idempotency_key: 'smoke-test-' + Date.now() + '-a'
+  };
+
+  console.log('Making first request...');
+  const responseA = await fetch(`${toolDoorUrl}/tool/deliver`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${toolDoorToken}`
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payloadA)
   });
-  
-  const receipt = await response.json();
-  
-  // Create evidence file with the receipt
+
+  const receiptA = await responseA.json();
+  console.log(`First request - Status: ${responseA.status}, Receipt:`, receiptA);
+
+  // Second request with different idempotency key B (within cooldown period)
+  const payloadB = {
+    ...basePayload,
+    idempotency_key: 'smoke-test-' + Date.now() + '-b'  // Different idempotency key
+  };
+
+  console.log('Making second request (different idempotency key, within cooldown)...');
+  const responseB = await fetch(`${toolDoorUrl}/tool/deliver`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${toolDoorToken}`
+    },
+    body: JSON.stringify(payloadB)
+  });
+
+  const receiptB = await responseB.json();
+  console.log(`Second request - Status: ${responseB.status}, Receipt:`, receiptB);
+
+  // Both requests should return proper receipts (no 500/1101 errors)
+  const bothSuccessful = responseA.status >= 200 && responseA.status < 500 &&
+                         responseB.status >= 200 && responseB.status < 500;
+
+  // Create evidence file with the receipts
   const smokeEvidence = {
-    status: 'COMPLETED',
+    status: bothSuccessful ? 'COMPLETED' : 'PARTIAL',
     timestamp: new Date().toISOString(),
-    request: payload,
-    response_status: response.status,
-    receipt: receipt,
+    requestA: payloadA,
+    responseA_status: responseA.status,
+    receiptA: receiptA,
+    requestB: payloadB,
+    responseB_status: responseB.status,
+    receiptB: receiptB,
+    both_requests_successful: bothSuccessful,
     tool_door_url: toolDoorUrl,
     test_webhook_url: testWebhookUrl
   };
-  
+
   // Create directory if it doesn't exist
   const evidenceDir = path.join('artifacts', 'smoke', 'tool_door_v0', new Date().toISOString().split('T')[0]);
   await fs.mkdir(evidenceDir, { recursive: true });
-  
+
   const evidenceFilePath = path.join(evidenceDir, 'smoke_evidence.json');
   await fs.writeFile(evidenceFilePath, JSON.stringify(smokeEvidence, null, 2));
-  
-  console.log('Smoke test completed successfully!');
-  console.log(`Response status: ${response.status}`);
-  console.log(`Receipt:`, receipt);
+
+  if (bothSuccessful) {
+    console.log('Smoke test completed successfully! Both requests handled properly.');
+  } else {
+    console.log('Smoke test partially completed - at least one request had an issue.');
+  }
+
+  console.log(`First request status: ${responseA.status}`);
+  console.log(`Second request status: ${responseB.status}`);
   console.log(`Evidence written to: ${evidenceFilePath}`);
 } catch (error) {
   console.error('Smoke test failed:', error.message);

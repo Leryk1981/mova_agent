@@ -2,6 +2,7 @@ import { validateRequest } from './validate_tool_door_v0';
 import { redactSensitiveData } from './redact_v0';
 import { sha256Hex } from './hash_v0';
 import { D1Store } from './d1_store_v0';
+import policyProfiles from './policy_profiles_v0.json';
 
 interface Env {
   TOOL_DOOR_DB: D1Database;
@@ -145,39 +146,6 @@ export class ToolDoorWorker {
     }
 
     // D) Load policy profile
-    // Note: In a real Cloudflare Worker, we'd load this from D1 or KV storage
-    // For now, we'll simulate loading the policy profiles
-    const policyProfiles: PolicyProfiles = {
-      "dev_local_v0": {
-        "allow_verbs": ["deliver", "external_call"],
-        "allowed_hosts": ["127.0.0.1", "localhost"],
-        "auth_required": true,
-        "throttle": {
-          "enabled": true,
-          "cooldown_ms": 60000,
-          "strict": false
-        },
-        "retry": {
-          "max_attempts": 2,
-          "backoff_ms": [200, 800]
-        }
-      },
-      "prod_v0": {
-        "allow_verbs": ["deliver", "external_call"],
-        "allowed_hosts": [],
-        "auth_required": true,
-        "throttle": {
-          "enabled": true,
-          "cooldown_ms": 60000,
-          "strict": true
-        },
-        "retry": {
-          "max_attempts": 3,
-          "backoff_ms": [300, 1200, 3000]
-        }
-      }
-    };
-
     const policyProfileId = requestBody.policy_profile_id;
     const policyProfile = policyProfiles[policyProfileId];
 
@@ -423,7 +391,12 @@ export class ToolDoorWorker {
 
     // Update throttle key timestamp on success only
     if (success) {
-      await store.insertThrottleRecord(throttleKey, Date.now());
+      try {
+        await store.insertThrottleRecord(throttleKey, Date.now());
+      } catch (error) {
+        // Even if throttle update fails, continue with the operation
+        console.warn('Throttle update failed, continuing:', error);
+      }
     }
 
     const receipt: ToolDoorReceipt = {

@@ -57,11 +57,11 @@ export class D1Store {
   }
 
   /**
-   * Insert a new throttle record
+   * Insert or update a throttle record (UPSERT)
    */
   async insertThrottleRecord(key: string, ts: number): Promise<void> {
     await this.db
-      .prepare('INSERT INTO throttle (key, ts) VALUES (?, ?)')
+      .prepare('INSERT INTO throttle (key, ts) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET ts = excluded.ts')
       .bind(key, ts)
       .run();
   }
