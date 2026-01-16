@@ -1,4 +1,4 @@
-﻿import { createHash } from 'crypto';
+﻿import { URL } from 'url';
 
 const SENSITIVE_KEYS = ['token', 'secret', 'key', 'auth', 'password', 'authorization'];
 
@@ -12,33 +12,50 @@ function looksSensitiveString(value: string): boolean {
   return SENSITIVE_KEYS.some((m) => lower.includes(m));
 }
 
-function mask(value: any): string {
-  const hash = createHash('sha256').update(String(value), 'utf8').digest('hex').slice(0, 12);
-  return '***REDACTED:' + hash + '***';
+function mask(): string {
+  return '[REDACTED]';
 }
 
-function redactValue(value: any, keyHint?: string): any {
+function redactUrl(value: string): string {
+  try {
+    const url = new URL(value);
+    url.search = '?[REDACTED]';
+    url.hash = '';
+    return url.toString();
+  } catch {
+    return mask();
+  }
+}
+
+function redactValue(value: any, keyHint: string | undefined, seen: WeakSet<object>): any {
   if (value === null || value === undefined) return value;
 
+  if (typeof value === 'object') {
+    if (seen.has(value)) {
+      return '[CYCLE]';
+    }
+    seen.add(value);
+  }
+
   if (Array.isArray(value)) {
-    return value.map((v) => redactValue(v));
+    return value.map((v) => redactValue(v, undefined, seen));
   }
 
   if (typeof value === 'object') {
     const out: Record<string, any> = {};
     for (const [k, v] of Object.entries(value)) {
-      if (isSensitiveKey(k)) {
-        out[k] = mask(v);
-      } else {
-        out[k] = redactValue(v, k);
-      }
+      out[k] = redactValue(v, k, seen);
     }
     return out;
   }
 
   if (typeof value === 'string') {
+    const lowerVal = value.toLowerCase();
     if (isSensitiveKey(keyHint || '') || looksSensitiveString(value)) {
-      return mask(value);
+      return mask();
+    }
+    if (lowerVal.startsWith('http://') || lowerVal.startsWith('https://')) {
+      return redactUrl(value);
     }
     return value;
   }
@@ -46,6 +63,7 @@ function redactValue(value: any, keyHint?: string): any {
   return value;
 }
 
-export function redactForEvidence(data: any): any {
-  return redactValue(data);
+export function redactObject(input: any): any {
+  const seen = new WeakSet<object>();
+  return redactValue(input, undefined, seen);
 }

@@ -1,0 +1,10 @@
+{
+  "target_url": "http://example.com/hook",
+  "payload": {
+    "ping": "ok"
+  },
+  "metadata": {
+    "note": "pos basic"
+  },
+  "dry_run": true
+}
