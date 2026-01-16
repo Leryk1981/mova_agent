@@ -130,7 +130,7 @@ export class ToolDoorWorker {
 
     // C) Validate against schema
     const validation = validateRequest(requestBody);
-    if (!validation.isValid) {
+    if (!validation.ok) {
       const receipt: ToolDoorReceipt = {
         ok: false,
         outcome_code: 'BAD_REQUEST',

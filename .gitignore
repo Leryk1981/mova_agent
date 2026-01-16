@@ -15,3 +15,4 @@ coverage/
 wsl
 artifacts/**
 !artifacts/.gitkeep
+cf/tool_door_v0/wrangler.toml
